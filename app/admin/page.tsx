@@ -22,25 +22,60 @@ export default function PanelAdmin() {
 
   const limit = 10;
 
+  // -----------------------------
+  // Category Filter
+  // -----------------------------
+
+  const [selectedCategory, setSelectedCategory] = useState<
+    number | undefined
+  >(undefined);
+
+  // -----------------------------
+  // Get Products
+  // -----------------------------
+
   const {
     data: productsData,
     isLoading,
     isError,
     isFetching,
   } = useQuery({
-    queryKey: ["products", page, limit],
-    queryFn: () => getProducts({ page, limit }),
+    queryKey: [
+      "products",
+      page,
+      limit,
+      selectedCategory,
+    ],
+
+    queryFn: () =>
+      getProducts({
+        page,
+        limit,
+        category: selectedCategory,
+      }),
   });
+
+  // -----------------------------
+  // Get Categories
+  // -----------------------------
 
   const { data: categories } = useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
   });
 
+  // -----------------------------
+  // Get SubCategories
+  // -----------------------------
+
   const { data: subCategories } = useQuery({
     queryKey: ["subcategories"],
     queryFn: getSubCategories,
   });
+
+  // -----------------------------
+  // Category Map
+  // -----------------------------
 
   const categoryMap = useMemo(() => {
     const map = new Map<number, string>();
@@ -52,6 +87,10 @@ export default function PanelAdmin() {
     return map;
   }, [categories]);
 
+  // -----------------------------
+  // SubCategory Map
+  // -----------------------------
+
   const subCategoryMap = useMemo(() => {
     const map = new Map<number, string>();
 
@@ -62,11 +101,19 @@ export default function PanelAdmin() {
     return map;
   }, [subCategories]);
 
+  // -----------------------------
+  // Products
+  // -----------------------------
+
   const products: Product[] = Array.isArray(productsData)
     ? productsData
     : productsData?.data || [];
 
   const totalPages = productsData?.pages || 1;
+
+  // -----------------------------
+  // Loading
+  // -----------------------------
 
   if (isLoading) {
     return (
@@ -76,6 +123,10 @@ export default function PanelAdmin() {
     );
   }
 
+  // -----------------------------
+  // Error
+  // -----------------------------
+
   if (isError) {
     return (
       <p className="p-6 text-red-500">
@@ -84,12 +135,14 @@ export default function PanelAdmin() {
     );
   }
 
-  console.log("productsData:", productsData);
-console.log("totalPages:", totalPages);
-console.log("page:", page);
   return (
-    <div dir="rtl" className="min-h-screen bg-[#faedcd]">
-      
+    <div
+      dir="rtl"
+      className="min-h-screen bg-[#faedcd]"
+    >
+
+      {/* Header */}
+
       <AdminPageHeader
         title="مدیریت کالاها"
         action={
@@ -99,7 +152,63 @@ console.log("page:", page);
         }
       />
 
-      <main className=" mx-auto p-6">
+      <main className="mx-auto p-6">
+
+        {/* Category Filter */}
+
+        <div className="flex items-center gap-3 flex-wrap mb-6">
+
+          {/* All */}
+
+          <Button
+            type="button"
+            onClick={() => {
+              setSelectedCategory(undefined);
+              setPage(1);
+            }}
+            className={
+              selectedCategory === undefined
+                ? "bg-green-600 hover:bg-green-700 text-white"
+                : "bg-white text-gray-700 hover:bg-gray-100"
+            }
+          >
+            همه
+          </Button>
+
+          {/* Categories */}
+
+          {categories?.map((category) => (
+
+            <Button
+              key={category.id}
+              type="button"
+              onClick={() => {
+                setSelectedCategory(category.id);
+                setPage(1);
+              }}
+              className={
+                selectedCategory === category.id
+                  ? "bg-green-600 hover:bg-green-700 text-white"
+                  : "bg-white text-gray-700 hover:bg-gray-100"
+              }
+            >
+              {category.name}
+            </Button>
+
+          ))}
+
+        </div>
+
+        {/* Fetching */}
+
+        {isFetching && (
+          <div className="text-sm text-blue-500 mb-3">
+            در حال دریافت کالاها...
+          </div>
+        )}
+
+        {/* Product Table */}
+
         <ProductTable
           products={products}
           categoryMap={categoryMap}
@@ -115,6 +224,7 @@ console.log("page:", page);
             console.log("delete", product);
           }}
         />
+
       </main>
 
     </div>
