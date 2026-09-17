@@ -1,6 +1,11 @@
 
 
 export default function Home() {
+ fetch("http://localhost:3002/products")
+  .then(response => response.json())
+  .then(data => {
+    console.log(data);
+  });
   return (
     <div >
       <main>
