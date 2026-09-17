@@ -7,6 +7,10 @@ import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuL
 import { cn } from "@/lib/utils";
 import { ArrowUpRight, TextAlignJustify } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+import ButtonDemo from "../../button/button-16";
+
 
 interface NavbarProps {
   navigationData: NavigationSection[];
@@ -14,17 +18,10 @@ interface NavbarProps {
 
 
 const CollaborateButton = ({ className }: { className?: string }) => (
-  <Button className={cn("relative text-sm font-medium rounded-full h-10 p-1 ps-4 pe-12 group transition-all duration-500 hover:ps-12 hover:pe-4 w-60 overflow-hidden hover:bg-primary/80", className)}>
-    <span className="relative z-10 transition-all duration-500 hover:cursor-pointer">
-      مدیریت فروشگاه 
-    </span>
-    <div className="absolute right-1 w-8 h-8 bg-background text-foreground rounded-full flex items-center justify-center transition-all duration-500 group-hover:right-[calc(100%-36px)] group-hover:rotate-45">
-      <ArrowUpRight size={16} />
-    </div>
-  </Button>
+  <ButtonDemo  />
 );
 
-const Navbar = ({navigationData}: NavbarProps) => {
+const Navbar = ({ navigationData }: NavbarProps) => {
   const [sticky, setSticky] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const handleScroll = useCallback(() => {
@@ -45,6 +42,8 @@ const Navbar = ({navigationData}: NavbarProps) => {
     };
   }, [handleScroll, handleResize]);
 
+  const pathname = usePathname();
+
   return (
     <div>
       <header className=" rounded-b-2xl bg-[#fdffb6]">
@@ -63,16 +62,28 @@ const Navbar = ({navigationData}: NavbarProps) => {
             <div>
               <NavigationMenu className="max-lg:hidden bg-muted p-0.5 rounded-full">
                 <NavigationMenuList className="flex gap-0">
-                  {navigationData.map((navItem) => (
-                    <NavigationMenuItem key={navItem.title}>
-                      <NavigationMenuLink
-                        href={navItem.href}
-                        className="px-2 lg:px-4 py-2 text-sm font-medium rounded-full text-muted-foreground hover:text-foreground hover:bg-background outline outline-transparent hover:outline-border hover:shadow-xs transition tracking-normal"
+                  {navigationData.map((item) => {
+                    const isActive =
+                      item.href === "/admin"
+                        ? pathname === "/admin"
+                        : pathname.startsWith(item.href);
+
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`
+        px-4 py-2 rounded-md transition-colors
+        ${isActive
+                            ? "bg-green-600 text-white"
+                            : "bg-transparent text-gray-700 hover:bg-gray-100"
+                          }
+      `}
                       >
-                        {navItem.title}
-                      </NavigationMenuLink>
-                    </NavigationMenuItem>
-                  ))}
+                        {item.title}
+                      </Link>
+                    );
+                  })}
                 </NavigationMenuList>
               </NavigationMenu>
             </div>

@@ -49,7 +49,7 @@ export default function PriceStockTable({
   return (
     <div className="border rounded-md bg-white overflow-hidden">
 
-      <Table>
+      <Table className="">
 
         <TableHeader className="bg-gray-100">
 

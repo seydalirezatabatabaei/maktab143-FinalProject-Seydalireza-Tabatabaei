@@ -1,10 +1,8 @@
 import api from "./axios";
-
 import {
   Category,
   SubCategory,
   Product,
-  ProductResponse,
 } from "@/app/types/types";
 
 export const getProducts = async ({
@@ -19,45 +17,34 @@ export const getProducts = async ({
   category?: number;
   subcategory?: number;
   search?: string;
-}): Promise<ProductResponse> => {
-  const response = await api.get("/products", {
+}) => {
+  const response = await api.get<Product[]>("/products", {
     params: {
       _page: page,
-      _per_page: limit,
-
-      ...(category && {
-        category,
-      }),
-
-      ...(subcategory && {
-        subcategory,
-      }),
-
-      ...(search && {
-        name: search,
-      }),
+      _limit: limit,
+      ...(category && { category }),
+      ...(subcategory && { subcategory }),
+      ...(search && { name_like: search }),
     },
   });
 
-  return response.data;
+  const totalCount = Number(response.headers["x-total-count"] || 0);
+
+  return {
+    data: response.data,
+    pages: Math.ceil(totalCount / limit),
+  };
 };
 
 export const getCategories = async (): Promise<Category[]> => {
   const response = await api.get("/category");
-
   return response.data;
 };
 
 export const getSubCategories = async (): Promise<SubCategory[]> => {
   const response = await api.get("/subcategory");
-
   return response.data;
 };
-
-
-// ---------------------------------------------
-// Update Product
-// ---------------------------------------------
 
 export const updateProduct = async ({
   id,

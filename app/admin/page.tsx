@@ -84,8 +84,11 @@ export default function PanelAdmin() {
     );
   }
 
+  console.log("productsData:", productsData);
+console.log("totalPages:", totalPages);
+console.log("page:", page);
   return (
-    <div dir="rtl" className="min-h-screen bg-white">
+    <div dir="rtl" className="min-h-screen bg-[#faedcd]">
       
       <AdminPageHeader
         title="مدیریت کالاها"
@@ -96,7 +99,7 @@ export default function PanelAdmin() {
         }
       />
 
-      <main className="max-w-5xl mx-auto p-6">
+      <main className=" mx-auto p-6">
         <ProductTable
           products={products}
           categoryMap={categoryMap}

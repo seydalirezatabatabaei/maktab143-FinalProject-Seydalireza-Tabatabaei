@@ -217,7 +217,7 @@ export default function PriceAndStockPage() {
 
       </div>
 
-      <main className="max-w-5xl mx-auto p-6">
+      <main className="max-w-5xl mx-auto p-6 ">
 
         {isFetching && (
           <div className="text-sm text-blue-500 mb-3">

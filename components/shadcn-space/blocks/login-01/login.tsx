@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Card,CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Field,
   FieldDescription,
@@ -10,8 +10,42 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import Logo from "@/assets/logo/logo";
+import { useState } from "react";
+import { login } from "@/Api/AuthApi";
 
+const [username, setUsername] = useState("");
+const [password, setPassword] = useState("");
+const [error, setError] = useState("");
+const [loading, setLoading] = useState(false);
+
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+
+  try {
+    setLoading(true);
+    setError("");
+
+    const data = await login({
+      username,
+      password,
+    });
+
+    console.log("Login successful:", data);
+
+    localStorage.setItem("accessToken", data.accessToken);
+    localStorage.setItem("refreshToken", data.refreshToken);
+
+    window.location.href = "/admin";
+  } catch (error) {
+    console.error(error);
+    setError("نام کاربری یا رمز عبور اشتباه است.");
+  } finally {
+    setLoading(false);
+  }
+};
 const LoginForm = () => {
+
+
   return (
     <section className="bg-[#fff3b0] dark:bg-background min-h-screen flex items-center justify-center relative">
       <div className="pointer-events-none absolute inset-0 right-0 overflow-hidden md:block hidden">
@@ -31,30 +65,33 @@ const LoginForm = () => {
             </div>
             <div className="flex flex-col gap-1">
               <CardTitle className="text-2xl font-medium text-card-foreground">
-                خوش برگشتید به پنل مدیریت 
+                خوش برگشتید به پنل مدیریت
               </CardTitle>
               <CardDescription className="text-sm text-muted-foreground font-normal">
-               هم اکنون به اکانت خودتان وارد شوید. 
+                هم اکنون به اکانت خودتان وارد شوید.
               </CardDescription>
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <form>
+            <form onSubmit={handleSubmit}>
               <FieldGroup className="gap-6">
 
 
                 <div className="flex flex-col gap-4">
                   <Field className="gap-1.5">
                     <FieldLabel
-                      htmlFor="email"
+                      htmlFor="username"
                       className="text-sm text-muted-foreground font-normal"
                     >
-                     آدرس ایمیل 
+                      نام کاربری
                     </FieldLabel>
+
                     <Input
-                      id="email"
-                      type="email"
-                      placeholder="example@gamil.com"
+                      id="username"
+                      type="text"
+                      placeholder="نام کاربری را وارد کنید"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
                       required
                       className="dark:bg-background h-9 shadow-xs"
                     />
@@ -64,13 +101,15 @@ const LoginForm = () => {
                       htmlFor="password"
                       className="text-sm text-muted-foreground font-normal"
                     >
-                       رمز ورود
+                      رمز ورود
                     </FieldLabel>
 
                     <Input
                       id="password"
                       type="password"
                       placeholder="رمز را اینجا وارد کنید"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                       required
                       className="dark:bg-background h-9 shadow-xs"
                     />
@@ -88,20 +127,25 @@ const LoginForm = () => {
                       htmlFor="terms"
                       className="text-sm text-primary font-normal cursor-pointer"
                     >
-                     منو یادت بمونه
+                      منو یادت بمونه
                     </FieldLabel>
                   </div>
                   <a
                     href="#"
                     className="text-sm text-card-foreground font-medium text-end"
                   >
-                    رمزو فراموش کردم 
+                    رمزو فراموش کردم
                   </a>
                 </Field>
 
                 <Field className="gap-4">
-                  <Button type="submit" size={"lg"} className="rounded-lg h-10 hover:bg-primary/80 cursor-pointer">
-                    بگذار داخل شوم 
+                  <Button
+                    type="submit"
+                    size="lg"
+                    disabled={loading}
+                    className="rounded-lg h-10 hover:bg-primary/80 cursor-pointer"
+                  >
+                    {loading ? "در حال ورود..." : "بگذار داخل شوم"}
                   </Button>
                   <FieldDescription className="text-center text-sm font-normal text-muted-foreground">
                     {" "}

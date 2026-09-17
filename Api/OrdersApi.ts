@@ -1,8 +1,5 @@
 import api from "./axios";
-
-import {
-  OrderResponse,
-} from "@/app/types/types";
+import { Order } from "@/app/types/types";
 
 export const getOrders = async ({
   page,
@@ -11,15 +8,20 @@ export const getOrders = async ({
 }: {
   page: number;
   limit: number;
-  delivered: "true" | "false";
-}): Promise<OrderResponse> => {
-  const response = await api.get("/orders", {
+  delivered?: "true" | "false";
+}) => {
+  const response = await api.get<Order[]>("/orders", {
     params: {
       _page: page,
-      _per_page: limit,
-      delivered,
+      _limit: limit,
+      ...(delivered && { delivered }),
     },
   });
 
-  return response.data;
+  const totalCount = Number(response.headers["x-total-count"] || 0);
+
+  return {
+    data: response.data,
+    pages: Math.ceil(totalCount / limit),
+  };
 };

@@ -49,7 +49,7 @@ export default function ProductTable({
 }: ProductTableProps) {
 
   return (
-    <div className="w-full">
+    <div className="w-full bg-[#ffcb77]">
 
       {isFetching && (
         <div className="text-center text-sm text-blue-500 mb-2">
@@ -59,9 +59,9 @@ export default function ProductTable({
 
       <div className="border rounded-md bg-white overflow-hidden">
 
-        <Table>
+        <Table className="bg-[#ffcb77]">
 
-          <TableHeader className="bg-gray-100">
+          <TableHeader className="bg-[#adafa7]">
             <TableRow>
 
               <TableHead className="w-[100px] text-right font-bold">
@@ -173,14 +173,14 @@ export default function ProductTable({
 
           <TableFooter>
 
-            <TableRow>
-
+            <TableRow >
+              <TableCell colSpan={5} className="flex justify-center">
               <PaginationFunc
                 currentPage={page}
                 totalPages={totalPages}
                 onPageChange={onPageChange}
               />
-
+              </TableCell>
             </TableRow>
 
           </TableFooter>
