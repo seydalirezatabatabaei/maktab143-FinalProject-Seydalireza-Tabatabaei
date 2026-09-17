@@ -193,9 +193,9 @@ server.post("/auth/refresh-token", async function (req, res, next) {
 
   try {
     const user = await jwt.verify(refreshToken, AUTH_JWT_REFRESH_TOKEN_SECRET);
-    const { username, name, role } = user;
+    const { dbUsername, name, role } = user;
     const accessToken = await jwt.sign(
-      { username, name, role },
+      { dbUsername, name, role },
       AUTH_JWT_SECRET,
       { expiresIn: accessTokenExpire }
     );
