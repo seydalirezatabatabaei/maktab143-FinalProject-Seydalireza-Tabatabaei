@@ -48,9 +48,9 @@ export default function OrdersTable({
   };
 
   return (
-    <div className="border rounded-md bg-white overflow-hidden">
+    <div className="border rounded-md bg-blue-600 overflow-hidden">
 
-      <Table>
+      <Table className="bg-blue-600 text-white">
 
         <TableHeader className="bg-gray-100">
 
