@@ -1,22 +1,47 @@
+import Navbar from "@/components/shadcn-space/blocks/navbar-01/navbar";
 
+import { NavigationSection } from "../types/types";
+
+import { Providers } from "./providers";
+
+import "../globals.css";
+
+const navigationData: NavigationSection[] = [
+  {
+    title: "کالاها",
+    href: "/admin",
+  },
+  {
+    title: "موجودی و قیمت ها",
+    href: "/admin/priceandstock",
+  },
+  {
+    title: "سفارشات",
+    href: "/admin/Orders",
+  },
+];
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+
   return (
-<div className="flex flex-col bg-gray-200">
+    <div
+      className="min-h-screen bg-gray-200 font-sans"
+      lang="fa"
+      dir="rtl"
+    >
 
-    <p className="w-full h-12 bg-emerald-600">AdminLayout</p>
+      <Navbar
+        navigationData={navigationData}
+      />
 
+      <Providers>
+        {children}
+      </Providers>
 
-        <main className="p-6">
-          {children}
-        </main>
-
- </div>
-
-  
+    </div>
   );
 }
