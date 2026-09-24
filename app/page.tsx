@@ -36,6 +36,8 @@ import {
 
 const FEATURED_LIMIT = 16;
 
+
+
 export default function HomePage() {
     const [mobileMenu, setMobileMenu] = useState(false);
   const { data: categories, isLoading: categoriesLoading } = useQuery({

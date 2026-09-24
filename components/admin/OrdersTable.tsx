@@ -38,154 +38,201 @@ export default function OrdersTable({
   onSortByTime,
   sortOrder,
 }: OrdersTableProps) {
-  
-
-   // -----------------------------
-  // change date to jalali
   // -----------------------------
-
+  // Convert date to Persian/Jalali
+  // -----------------------------
   const formatDate = (timestamp: number) => {
     return new Intl.DateTimeFormat("fa-IR", {
       year: "numeric",
-      month: "numeric",
+      month: "long",
       day: "numeric",
     }).format(new Date(timestamp));
   };
 
+  // -----------------------------
+  // Format time
+  // -----------------------------
+  const formatTime = (timestamp: number) => {
+    return new Intl.DateTimeFormat("fa-IR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(timestamp));
+  };
+
   return (
-    <div className="border rounded-md bg-blue-600 overflow-hidden">
+    <div className="w-full overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
+      {/* Header */}
+      <div className="border-b border-gray-100 bg-white px-6 py-5">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-base font-bold text-gray-900">
+            سفارش‌ها
+          </h2>
 
-      <Table className="bg-[#81b29a] text-white">
+          <p className="text-xs text-gray-400">
+            لیست سفارش‌های ثبت‌شده و جزئیات مربوط به آن‌ها
+          </p>
+        </div>
+      </div>
 
-        <TableHeader className="bg-gray-100">
+      {/* Table */}
+      <div className="w-full overflow-x-auto">
+        <Table className="w-full">
+          <TableHeader>
+            <TableRow className="border-b border-gray-100 bg-gray-50/80 hover:bg-gray-50/80">
+              {/* User */}
+              <TableHead className="h-14 px-6 text-right text-xs font-bold text-gray-500">
+                مشتری
+              </TableHead>
 
-          <TableRow>
+              {/* Price */}
+              <TableHead className="h-14 px-6 text-right text-xs font-bold text-gray-500">
+                مبلغ سفارش
+              </TableHead>
 
-            {/* User */}
+              {/* Time */}
+              <TableHead className="h-14 px-6 text-right text-xs font-bold text-gray-500">
+                <button
+                  type="button"
+                  onClick={onSortByTime}
+                  className="group flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-bold text-gray-500 transition-all hover:bg-gray-100 hover:text-gray-900"
+                >
+                  <span>زمان ثبت</span>
 
-            <TableHead className="text-right font-bold">
-              نام کاربر
-            </TableHead>
-
-            {/* Price */}
-
-            <TableHead className="text-right font-bold">
-              مجموع مبلغ
-            </TableHead>
-
-            {/* Time */}
-
-            <TableHead className="text-right font-bold">
-
-              <button
-                type="button"
-                onClick={onSortByTime}
-                className="flex items-center gap-2 font-bold hover:text-green-600 transition-colors"
-              >
-                <span>
-                  زمان
-                </span>
-
-                <span className="text-sm">
-                  {sortOrder === "desc" ? "↓" : "↑"}
-                </span>
-
-              </button>
-
-            </TableHead>
-
-            {/* Review */}
-
-            <TableHead className="text-center font-bold">
-              بررسی سفارش
-            </TableHead>
-
-          </TableRow>
-
-        </TableHeader>
-
-        <TableBody>
-
-          {orders.length === 0 ? (
-
-            <TableRow>
-
-              <TableCell
-                colSpan={4}
-                className="text-center py-8 text-gray-500"
-              >
-                سفارشی وجود ندارد
-              </TableCell>
-
-            </TableRow>
-
-          ) : (
-
-            orders.map((order) => (
-
-              <TableRow key={order.id}>
-
-                {/* User */}
-
-                <TableCell className="font-medium">
-                  {order.username}{" "}
-                  {order.lastname}
-                </TableCell>
-
-                {/* Price */}
-
-                <TableCell>
-                  {order.prices.toLocaleString("fa-IR")} تومان
-                </TableCell>
-
-                {/* Date */}
-
-                <TableCell>
-                  {formatDate(order.createdAt)}
-                </TableCell>
-
-                {/* Review */}
-
-                <TableCell className="text-center">
-
-                  <Button
-                    variant="link"
-                    className="text-blue-600 p-0"
-                    onClick={() => onReview(order)}
+                  <span
+                    className={`flex h-6 w-6 items-center justify-center rounded-md text-xs transition-all ${
+                      sortOrder === "desc"
+                        ? "bg-emerald-50 text-emerald-600"
+                        : "bg-blue-50 text-blue-600"
+                    }`}
                   >
-                    بررسی سفارش
-                  </Button>
+                    {sortOrder === "desc" ? "↓" : "↑"}
+                  </span>
+                </button>
+              </TableHead>
 
+              {/* Action */}
+              <TableHead className="h-14 w-[170px] px-6 text-center text-xs font-bold text-gray-500">
+                عملیات
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+
+          <TableBody>
+            {orders.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} className="h-64 text-center">
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 text-2xl">
+                      🛒
+                    </div>
+
+                    <h3 className="mb-1 font-bold text-gray-800">
+                      سفارشی وجود ندارد
+                    </h3>
+
+                    <p className="text-sm text-gray-400">
+                      هنوز هیچ سفارشی برای نمایش ثبت نشده است.
+                    </p>
+                  </div>
                 </TableCell>
-
               </TableRow>
+            ) : (
+              orders.map((order) => (
+                <TableRow
+                  key={order.id}
+                  className="group border-b border-gray-100 transition-all duration-200 hover:bg-emerald-50/30"
+                >
+                  {/* User */}
+                  <TableCell className="px-6 py-5">
+                    <div className="flex items-center gap-3">
+                      {/* Avatar */}
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 font-bold text-emerald-600">
+                        {order.username?.charAt(0) || "ک"}
+                      </div>
 
-            ))
+                      <div className="flex min-w-0 flex-col gap-1">
+                        <span className="text-sm font-semibold text-gray-900">
+                          {order.username} {order.lastname}
+                        </span>
 
-          )}
+                        <span className="text-xs text-gray-400">
+                          سفارش #{order.id}
+                        </span>
+                      </div>
+                    </div>
+                  </TableCell>
 
-        </TableBody>
+                  {/* Price */}
+                  <TableCell className="px-6 py-5">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-sm font-bold text-gray-900">
+                        {order.prices.toLocaleString("fa-IR")}
+                      </span>
 
-        <TableFooter>
+                      <span className="text-[11px] text-gray-400">
+                        تومان
+                      </span>
+                    </div>
+                  </TableCell>
 
-          <TableRow>
+                  {/* Date */}
+                  <TableCell className="px-6 py-5">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-sm font-medium text-gray-800">
+                        {formatDate(order.createdAt)}
+                      </span>
 
-            <TableCell colSpan={4}>
+                      <span className="text-xs text-gray-400">
+                        {formatTime(order.createdAt)}
+                      </span>
+                    </div>
+                  </TableCell>
 
-              <PaginationFunc
-                currentPage={page}
-                totalPages={totalPages}
-                onPageChange={onPageChange}
-              />
+                  {/* Review */}
+                  <TableCell className="px-6 py-5">
+                    <div className="flex justify-center">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => onReview(order)}
+                        className="h-9 rounded-xl px-4 text-xs font-semibold text-emerald-600 transition-all hover:bg-emerald-50 hover:text-emerald-700"
+                      >
+                        <span className="ml-2">↗</span>
+                        بررسی سفارش
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
 
-            </TableCell>
+          {/* Footer */}
+          <TableFooter>
+            <TableRow className="border-t border-gray-100 bg-white hover:bg-white">
+              <TableCell colSpan={4} className="px-6 py-5">
+                <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+                  <div className="text-xs text-gray-400">
+                    نمایش
+                    <span className="mx-1 font-semibold text-gray-700">
+                      {orders.length}
+                    </span>
+                    سفارش
+                  </div>
 
-          </TableRow>
-
-        </TableFooter>
-
-      </Table>
-
+                  <div className="flex justify-center">
+                    <PaginationFunc
+                      currentPage={page}
+                      totalPages={totalPages}
+                      onPageChange={onPageChange}
+                    />
+                  </div>
+                </div>
+              </TableCell>
+            </TableRow>
+          </TableFooter>
+        </Table>
+      </div>
     </div>
   );
 }

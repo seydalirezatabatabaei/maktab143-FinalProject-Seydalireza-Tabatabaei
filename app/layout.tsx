@@ -42,7 +42,7 @@ export default function RootLayout({
   return (
     <html lang="fa" dir="rtl" >
       <body className={persianFont.variable}>
-         <Navbar navigationData={navigationData} />
+      
         <Providers>{children}</Providers>
       </body>
     </html>
