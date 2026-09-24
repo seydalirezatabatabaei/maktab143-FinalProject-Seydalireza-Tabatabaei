@@ -5,6 +5,39 @@ import {
   Product,
 } from "@/app/types/types";
 
+export const API_BASE_URL = api.defaults.baseURL || "http://localhost:3002";
+
+type ProductResponseRow = Omit<Product, "image"> & {
+  image: string | string[];
+};
+
+const normalizeProduct = (product: ProductResponseRow): Product => ({
+  ...product,
+  image: Array.isArray(product.image)
+    ? product.image
+    : product.image
+      ? [product.image]
+      : [],
+});
+
+export const getProductImageSrc = (image: string | string[] | undefined) => {
+  const value = Array.isArray(image) ? image[0] : image;
+
+  if (!value) return "/ImageProduct/phone.jpg";
+  if (value.startsWith("/files/")) {
+    return `${API_BASE_URL}${value}`;
+  }
+  if (
+    value.startsWith("http://") ||
+    value.startsWith("https://") ||
+    value.startsWith("/")
+  ) {
+    return value;
+  }
+
+  return `/ImageProduct/${value}.jpg`;
+};
+
 export const getProducts = async ({
   page,
   limit,
@@ -61,4 +94,62 @@ export const updateProduct = async ({
   });
 
   return response.data;
+};
+
+
+export type ProductCreateInput = {
+  name: string;
+  brand: string;
+  image: string;
+  thumbnail: string;
+  price: number;
+  quantity: number;
+  category: number;
+  subcategory: number;
+  description: string;
+};
+
+export type ProductCreateFormInput = Omit<
+  ProductCreateInput,
+  "image" | "thumbnail"
+> & {
+  image: File;
+};
+
+export const uploadProductImage = async (image: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append("image", image);
+
+  const response = await api.post<{ filename: string }>("/upload", formData);
+  const filename = response.data.filename;
+
+  if (!filename) {
+    throw new Error("تصویر کالا ذخیره نشد");
+  }
+
+  const baseUrl = api.defaults.baseURL || "http://localhost:3002";
+  return `${baseUrl}/files/${encodeURIComponent(filename)}`;
+};
+
+export const createProduct = async (
+  product: ProductCreateInput
+): Promise<Product> => {
+  const response = await api.post<Product>("/products", product);
+  return response.data;
+};
+
+export const createProductWithImage = async (
+  product: ProductCreateFormInput
+): Promise<Product> => {
+  const imageUrl = await uploadProductImage(product.image);
+
+  return createProduct({
+    ...product,
+    image: imageUrl,
+    thumbnail: imageUrl,
+  });
+};
+
+export const deleteProduct = async (id: number): Promise<void> => {
+  await api.delete(`/products/${id}`);
 };

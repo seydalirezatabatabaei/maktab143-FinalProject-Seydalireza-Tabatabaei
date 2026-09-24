@@ -2,28 +2,17 @@ import Navbar from "@/components/shadcn-space/blocks/navbar-01/navbar";
 import { NavigationSection } from "../types/types";
 
 const navigationData: NavigationSection[] = [
+  
   {
-    title: "درباره ما",
-    href: "#",
-  },
-  {
-    title: "خدمات",
-    href: "#",
-  },
-  {
-    title: "محصولات پر تخفیف",
-    href: "#",
+    title: "خرید اقساطی ",
+    href: "/application/#",
   },
   {
     title: "فروشگاه",
-    href: "#",
+    href: "/application/products",
   },
   {
-    title: "خرید گروهی",
-    href: "#",
-  },
-  {
-    title: "جایزه‌های این ماه",
+    title: " سبد خرید ",
     href: "#",
   },
 ];
@@ -34,12 +23,11 @@ export default function ApplicationLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div>
-      <Navbar navigationData={navigationData} />
+    <div className="min-h-screen bg-background">
+    
 
-      <main className="w-full bg-amber-100 p-3">
+      <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6">
         {children}
       </main>
     </div>
-  );
-}
+  );}

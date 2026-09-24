@@ -1,10 +1,9 @@
 import Navbar from "@/components/shadcn-space/blocks/navbar-01/navbar";
-
 import { NavigationSection } from "../types/types";
 
-import { Providers } from "./providers";
-
-import "../globals.css";
+// -----------------------------
+//   this data just for admin page
+// -----------------------------
 
 const navigationData: NavigationSection[] = [
   {
@@ -26,22 +25,14 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-
   return (
     <div
       className="min-h-screen bg-gray-200 font-sans"
       lang="fa"
       dir="rtl"
     >
-
-      <Navbar
-        navigationData={navigationData}
-      />
-
-      <Providers>
-        {children}
-      </Providers>
-
+      <Navbar navigationData={navigationData} />
+      {children}
     </div>
   );
 }

@@ -38,6 +38,11 @@ export default function OrdersTable({
   onSortByTime,
   sortOrder,
 }: OrdersTableProps) {
+  
+
+   // -----------------------------
+  // change date to jalali
+  // -----------------------------
 
   const formatDate = (timestamp: number) => {
     return new Intl.DateTimeFormat("fa-IR", {
@@ -50,7 +55,7 @@ export default function OrdersTable({
   return (
     <div className="border rounded-md bg-blue-600 overflow-hidden">
 
-      <Table className="bg-blue-600 text-white">
+      <Table className="bg-[#81b29a] text-white">
 
         <TableHeader className="bg-gray-100">
 

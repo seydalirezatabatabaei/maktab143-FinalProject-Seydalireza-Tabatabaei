@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
 
 import {
   Table,
@@ -19,6 +18,17 @@ import { PaginationFunc } from "@/components/ui/PaginationCom";
 
 import { Product } from "@/app/types/types";
 
+const getProductImageSrc = (product: Product) => {
+  const image = Array.isArray(product.image) ? product.image[0] : product.image;
+
+  if (!image) return "/ImageProduct/phone.jpg";
+  if (image.startsWith("http://") || image.startsWith("https://") || image.startsWith("/")) {
+    return image;
+  }
+
+  return `/ImageProduct/${image}.jpg`;
+};
+
 interface ProductTableProps {
   products: Product[];
 
@@ -31,6 +41,7 @@ interface ProductTableProps {
   onPageChange: (page: number) => void;
 
   isFetching?: boolean;
+  deletingProductId?: number | null;
 
   onEdit?: (product: Product) => void;
   onDelete?: (product: Product) => void;
@@ -44,12 +55,13 @@ export default function ProductTable({
   totalPages,
   onPageChange,
   isFetching = false,
+  deletingProductId = null,
   onEdit,
   onDelete,
 }: ProductTableProps) {
 
   return (
-    <div className="w-full bg-[#ffcb77]">
+    <div className="w-full px-5 ">
 
       {isFetching && (
         <div className="text-center text-sm text-blue-500 mb-2">
@@ -95,8 +107,8 @@ export default function ProductTable({
 
                   <div className="w-12 h-12 rounded-md bg-gray-200 overflow-hidden border">
 
-                    <Image
-                      src={`/ImageProduct/${product.image[0]}.jpg`}
+                    <img
+                      src={getProductImageSrc(product)}
                       alt={product.name}
                       width={48}
                       height={48}
@@ -154,11 +166,12 @@ export default function ProductTable({
                     <Button
                       variant="link"
                       className="text-blue-600 p-0"
+                      disabled={deletingProductId === product.id}
                       onClick={() =>
                         onDelete?.(product)
                       }
                     >
-                      حذف
+                      {deletingProductId === product.id ? "در حال حذف..." : "حذف"}
                     </Button>
 
                   </div>

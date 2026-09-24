@@ -46,7 +46,7 @@ export function PaginationFunc({
   const pages = getPageNumbers();
 
   return (
-    <Pagination dir="ltr">
+    <Pagination dir="ltr" >
       <PaginationContent>
        
         <PaginationItem>
@@ -75,7 +75,7 @@ export function PaginationFunc({
                   e.preventDefault();
                   onPageChange(page);
                 }}
-                className="cursor-pointer"
+                className="cursor-pointer text-blue-800"
               >
                 {page}
               </PaginationLink>

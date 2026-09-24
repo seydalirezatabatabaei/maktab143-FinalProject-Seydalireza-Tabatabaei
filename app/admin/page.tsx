@@ -1,12 +1,19 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 import {
+  createProductWithImage,
+  deleteProduct,
   getProducts,
   getCategories,
   getSubCategories,
+  updateProduct,
 } from "@/Api/ProductsApi";
 
 import { Product } from "@/app/types/types";
@@ -15,6 +22,8 @@ import { AccordionLoader } from "@/components/accordion-loader";
 import { Button } from "@/components/ui/button";
 
 import ProductTable from "@/components/admin/ProductTable";
+import ProductEditModal from "@/components/admin/ProductEditModal";
+import ProductCreateModal from "@/components/admin/ProductCreateModal";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 
 export default function PanelAdmin() {
@@ -26,9 +35,7 @@ export default function PanelAdmin() {
   // Category Filter
   // -----------------------------
 
-  const [selectedCategory, setSelectedCategory] = useState<
-    number | undefined
-  >(undefined);
+  const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
 
   // -----------------------------
   // Get Products
@@ -71,6 +78,42 @@ export default function PanelAdmin() {
   const { data: subCategories } = useQuery({
     queryKey: ["subcategories"],
     queryFn: getSubCategories,
+  });
+
+  const queryClient = useQueryClient();
+
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [deletingProductId, setDeletingProductId] = useState<number | null>(null);
+
+  const updateMutation = useMutation({
+    mutationFn: updateProduct,
+    onSuccess: () => {
+      setEditingProduct(null);
+      queryClient.invalidateQueries({
+        queryKey: ["products"],
+      });
+    },
+  });
+
+  const createMutation = useMutation({
+    mutationFn: createProductWithImage,
+    onSuccess: () => {
+      setIsAddModalOpen(false);
+      queryClient.invalidateQueries({
+        queryKey: ["products"],
+      });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteProduct,
+    onSettled: () => {
+      setDeletingProductId(null);
+      queryClient.invalidateQueries({
+        queryKey: ["products"],
+      });
+    },
   });
 
   // -----------------------------
@@ -138,7 +181,7 @@ export default function PanelAdmin() {
   return (
     <div
       dir="rtl"
-      className="min-h-screen bg-[#faedcd]"
+      className="min-h-screen"
     >
 
       {/* Header */}
@@ -146,7 +189,11 @@ export default function PanelAdmin() {
       <AdminPageHeader
         title="مدیریت کالاها"
         action={
-          <Button className="bg-green-600 hover:bg-green-700">
+          <Button
+            type="button"
+            className="bg-green-600 hover:bg-green-700"
+            onClick={() => setIsAddModalOpen(true)}
+          >
             افزودن کالا
           </Button>
         }
@@ -217,13 +264,49 @@ export default function PanelAdmin() {
           totalPages={totalPages}
           onPageChange={setPage}
           isFetching={isFetching}
+          deletingProductId={deletingProductId}
           onEdit={(product) => {
-            console.log("edit", product);
+            setEditingProduct(product);
           }}
           onDelete={(product) => {
-            console.log("delete", product);
+            if (!window.confirm(`آیا از حذف «${product.name}» مطمئن هستید؟`)) {
+              return;
+            }
+
+            setDeletingProductId(product.id);
+            void deleteMutation.mutateAsync(product.id);
           }}
         />
+
+        <ProductEditModal
+          key={editingProduct?.id ?? "closed"}
+          product={editingProduct}
+          categories={categories ?? []}
+          subcategories={subCategories ?? []}
+          isPending={updateMutation.isPending}
+          errorMessage={
+            updateMutation.isError && updateMutation.error instanceof Error
+              ? updateMutation.error.message
+              : null
+          }
+          onClose={() => setEditingProduct(null)}
+          onUpdate={(values) => updateMutation.mutateAsync(values)}
+        />
+
+        {isAddModalOpen && (
+          <ProductCreateModal
+            categories={categories ?? []}
+            subcategories={subCategories ?? []}
+            isPending={createMutation.isPending}
+            errorMessage={
+              createMutation.isError && createMutation.error instanceof Error
+                ? createMutation.error.message
+                : null
+            }
+            onClose={() => setIsAddModalOpen(false)}
+            onCreate={(values) => createMutation.mutateAsync(values)}
+          />
+        )}
 
       </main>
 

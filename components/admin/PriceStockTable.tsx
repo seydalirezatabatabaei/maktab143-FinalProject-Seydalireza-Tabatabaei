@@ -47,9 +47,9 @@ export default function PriceStockTable({
 }: PriceStockTableProps) {
 
   return (
-    <div className="border rounded-md bg-white overflow-hidden">
+    <div className="border rounded-md overflow-hidden">
 
-      <Table className="">
+      <Table className="bg-[#f49cbb]">
 
         <TableHeader className="bg-gray-100">
 
