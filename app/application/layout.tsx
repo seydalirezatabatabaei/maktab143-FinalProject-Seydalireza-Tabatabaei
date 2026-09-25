@@ -1,45 +1,50 @@
-import Navbar from "@/components/shadcn-space/blocks/navbar-01/navbar";
+import { Vazirmatn, Geist } from "next/font/google";
+import "../globals.css";
+import { cn } from "@/lib/utils";
+import { Providers } from "@/app/admin/providers";
+import localFont from "next/font/local";
 import { NavigationSection } from "../types/types";
+import Navbar from "@/components/shadcn-space/blocks/navbar-01/navbar";
 
 const navigationData: NavigationSection[] = [
+  
   {
-    title: "درباره ما",
-    href: "#",
-  },
-  {
-    title: "خدمات",
-    href: "#",
-  },
-  {
-    title: "محصولات پر تخفیف",
-    href: "#",
+    title: "خرید اقساطی ",
+    href: "/application/#",
   },
   {
     title: "فروشگاه",
-    href: "#",
+    href: "/application/products",
   },
   {
-    title: "خرید گروهی",
-    href: "#",
-  },
-  {
-    title: "جایزه‌های این ماه",
+    title: " سبد خرید ",
     href: "#",
   },
 ];
 
-export default function ApplicationLayout({
+const persianFont = localFont({
+  src: [
+
+    {
+      path: "../../public/fonts/BKOODB.woff2",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-persian",
+});
+
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div>
-      <Navbar navigationData={navigationData} />
-
-      <main className="w-full bg-amber-100 p-3">
-        {children}
-      </main>
-    </div>
+    <html lang="fa" dir="rtl" >
+      <body className={persianFont.variable}>
+         <Navbar navigationData={navigationData} />
+        <Providers>{children}</Providers>
+      </body>
+    </html>
   );
 }

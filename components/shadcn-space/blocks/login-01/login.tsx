@@ -28,31 +28,47 @@ const LoginForm = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+ const handleSubmit = async (
+  e: React.FormEvent<HTMLFormElement>
+) => {
+  e.preventDefault();
 
-    try {
-      setLoading(true);
-      setError("");
+  try {
+    setLoading(true);
+    setError("");
 
-      const data = await login({
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
         username,
         password,
-      });
+      }),
+    });
 
-      console.log("Login successful:", data);
+    const data = await response.json();
 
-      localStorage.setItem("accessToken", data.accessToken);
-      localStorage.setItem("refreshToken", data.refreshToken);
-
-      window.location.href = "/admin";
-    } catch (error) {
-      console.error(error);
-      setError("نام کاربری یا رمز عبور اشتباه است.");
-    } finally {
-      setLoading(false);
+    if (!response.ok) {
+      throw new Error(
+        data?.message || "Login failed"
+      );
     }
-  };
+
+    console.log("Login successful");
+
+    window.location.href = "/admin";
+  } catch (error) {
+    console.error(error);
+
+    setError(
+      "نام کاربری یا رمز عبور اشتباه است."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <section className="bg-[#fff3b0] dark:bg-background min-h-screen flex items-center justify-center relative">

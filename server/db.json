@@ -1,22 +1,6 @@
 {
   "products": [
     {
-      "name": "IdeaPad Slim 3 15IRU8",
-      "brand": "Lenovo",
-      "image": [
-        "lab1",
-        "lab2"
-      ],
-      "thumbnail": "lab1",
-      "price": 26500000,
-      "quantity": 27,
-      "createdAt": 1775656800000,
-      "id": 1,
-      "category": 1,
-      "subcategory": 1,
-      "description": "<p>IdeaPad Slim 3 15IRU8 محصولی با کیفیت از برند Lenovo مناسب استفاده روزمره و حرفه‌ای است.</p>"
-    },
-    {
       "name": "Aspire 5 A515",
       "brand": "Acer",
       "image": [
@@ -24,8 +8,8 @@
         "lab3"
       ],
       "thumbnail": "lab2",
-      "price": 31500000,
-      "quantity": 6,
+      "price": 8888888,
+      "quantity": 8,
       "createdAt": 1768122000000,
       "id": 2,
       "category": 1,
@@ -56,7 +40,7 @@
         "lab5"
       ],
       "thumbnail": "lab4",
-      "price": 58500000,
+      "price": 0,
       "quantity": 34,
       "createdAt": 1772632800000,
       "id": 4,
@@ -799,6 +783,19 @@
       "category": 8,
       "subcategory": 24,
       "description": "<p>DataTraveler 128GB محصولی با کیفیت از برند Kingston مناسب استفاده روزمره و حرفه‌ای است.</p>"
+    },
+    {
+      "name": "ali",
+      "brand": "lenovo",
+      "image": "http://localhost:3002/files/506d1e5ba3042dddbc597489d836228a",
+      "price": 2500000,
+      "quantity": 5,
+      "category": 1,
+      "subcategory": "1",
+      "description": "dfsfasdfa",
+      "thumbnail": "http://localhost:3002/files/506d1e5ba3042dddbc597489d836228a",
+      "createdAt": 1790261475091,
+      "id": 51
     }
   ],
   "category": [

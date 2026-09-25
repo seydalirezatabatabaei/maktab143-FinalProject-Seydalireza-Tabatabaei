@@ -1,5 +1,8 @@
 "use client";
 
+// -----------------------------
+// import every things
+// -----------------------------
 import React, { useEffect, useState } from "react";
 
 import {
@@ -26,8 +29,7 @@ export default function PriceAndStockPage() {
 
   const [page, setPage] = useState(1);
 
-  const [editedProducts, setEditedProducts] =
-    useState<Product[]>([]);
+  const [editedProducts, setEditedProducts] = useState<Product[]>([]);
 
   const limit = 10;
 
@@ -101,9 +103,9 @@ export default function PriceAndStockPage() {
       prev.map((product) =>
         product.id === id
           ? {
-              ...product,
-              price,
-            }
+            ...product,
+            price,
+          }
           : product
       )
     );
@@ -123,9 +125,9 @@ export default function PriceAndStockPage() {
       prev.map((product) =>
         product.id === id
           ? {
-              ...product,
-              quantity,
-            }
+            ...product,
+            quantity,
+          }
           : product
       )
     );
@@ -206,9 +208,9 @@ export default function PriceAndStockPage() {
         </h1>
 
         <Button
-          variant="outline"
           onClick={handleSave}
           disabled={updateMutation.isPending}
+          className="bg-green-600 text-white hover:bg-green-700"
         >
           {updateMutation.isPending
             ? "در حال ذخیره..."
