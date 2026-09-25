@@ -1,9 +1,15 @@
+
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { ProductUpdateInput } from "@/Api/ProductsApi";
-import { Category, Product, SubCategory } from "@/app/types/types";
+import {
+  Category,
+  Product,
+  SubCategory,
+} from "@/app/types/types";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,6 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -33,8 +40,28 @@ interface ProductEditModalProps {
   isPending?: boolean;
   errorMessage?: string | null;
   onClose: () => void;
-  onUpdate: (values: ProductUpdateInput) => Promise<unknown> | unknown;
+  onUpdate: (
+    values: ProductUpdateInput
+  ) => Promise<unknown> | unknown;
 }
+
+const createInitialForm = (
+  product: Product | null
+): ProductForm | null => {
+  if (!product) {
+    return null;
+  }
+
+  return {
+    name: product.name ?? "",
+    brand: product.brand ?? "",
+    price: String(product.price ?? ""),
+    quantity: String(product.quantity ?? ""),
+    category: product.category ?? "",
+    subcategory: product.subcategory ?? "",
+    description: product.description ?? "",
+  };
+};
 
 export default function ProductEditModal({
   product,
@@ -46,33 +73,48 @@ export default function ProductEditModal({
   onUpdate,
 }: ProductEditModalProps) {
   const formRef = useRef<HTMLFormElement>(null);
+
   const [form, setForm] = useState<ProductForm | null>(
-    product
-      ? {
-          name: product.name,
-          brand: product.brand,
-          price: String(product.price),
-          quantity: String(product.quantity),
-          category: product.category,
-          subcategory: product.subcategory,
-          description: product.description,
-        }
-      : null
+    createInitialForm(product)
   );
+
+// change the the form state whenever the product prop changes
+  useEffect(() => {
+    setForm(createInitialForm(product));
+  }, [product]);
 
   const availableSubcategories = subcategories.filter(
-    (subcategory) => subcategory.category === form?.category
+    (subcategory) =>
+      subcategory.category === form?.category
   );
 
-  const updateForm = (field: keyof ProductForm, value: string) => {
+  const updateForm = (
+    field: keyof ProductForm,
+    value: string
+  ) => {
     setForm((current) => {
-      if (!current) return current;
+      if (!current) {
+        return current;
+      }
 
       if (field === "category") {
+        const category = value
+          ? Number(value)
+          : "";
+
         return {
           ...current,
-          category: value ? Number(value) : "",
+          category,
           subcategory: "",
+        };
+      }
+
+      if (field === "subcategory") {
+        return {
+          ...current,
+          subcategory: value
+            ? Number(value)
+            : "",
         };
       }
 
@@ -83,13 +125,31 @@ export default function ProductEditModal({
     });
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
 
-    if (!form || !product || !formRef.current?.reportValidity()) return;
+    if (
+      !form ||
+      !product ||
+      !formRef.current?.reportValidity()
+    ) {
+      return;
+    }
 
     const price = Number(form.price);
     const quantity = Number(form.quantity);
+
+    const category =
+      typeof form.category === "number"
+        ? form.category
+        : null;
+
+    const subcategory =
+      typeof form.subcategory === "number"
+        ? form.subcategory
+        : null;
 
     if (
       !form.name.trim() ||
@@ -98,29 +158,33 @@ export default function ProductEditModal({
       price < 0 ||
       !Number.isFinite(quantity) ||
       quantity < 0 ||
-      !form.category ||
-      !form.subcategory
+      category === null ||
+      subcategory === null
     ) {
       return;
     }
 
-    void onUpdate({
+    const values: ProductUpdateInput = {
       id: product.id,
       name: form.name.trim(),
       brand: form.brand.trim(),
       price,
       quantity,
-      category: form.category,
-      subcategory: form.subcategory,
-      description: form.description,
-    });
+      category,
+      subcategory,
+      description: form.description.trim(),
+    };
+
+    void onUpdate(values);
   };
 
   return (
     <Dialog
       open={Boolean(product)}
       onOpenChange={(open) => {
-        if (!open) onClose();
+        if (!open) {
+          onClose();
+        }
       }}
     >
       <DialogContent
@@ -129,6 +193,7 @@ export default function ProductEditModal({
       >
         <DialogHeader>
           <DialogTitle>ویرایش کالا</DialogTitle>
+
           <DialogDescription>
             اطلاعات کالای انتخاب شده را تغییر دهید.
           </DialogDescription>
@@ -140,32 +205,50 @@ export default function ProductEditModal({
           className="flex flex-col gap-4"
         >
           <div className="grid gap-4 sm:grid-cols-2">
+            {/* نام */}
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="edit-product-name">نام کالا</Label>
+              <Label htmlFor="edit-product-name">
+                نام کالا
+              </Label>
+
               <Input
                 id="edit-product-name"
                 value={form?.name ?? ""}
                 onChange={(event) =>
-                  updateForm("name", event.target.value)
+                  updateForm(
+                    "name",
+                    event.target.value
+                  )
                 }
                 required
               />
             </div>
 
+            {/* برند */}
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="edit-product-brand">برند</Label>
+              <Label htmlFor="edit-product-brand">
+                برند
+              </Label>
+
               <Input
                 id="edit-product-brand"
                 value={form?.brand ?? ""}
                 onChange={(event) =>
-                  updateForm("brand", event.target.value)
+                  updateForm(
+                    "brand",
+                    event.target.value
+                  )
                 }
                 required
               />
             </div>
 
+            {/* قیمت */}
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="edit-product-price">قیمت</Label>
+              <Label htmlFor="edit-product-price">
+                قیمت
+              </Label>
+
               <Input
                 id="edit-product-price"
                 type="number"
@@ -173,14 +256,21 @@ export default function ProductEditModal({
                 step="1"
                 value={form?.price ?? ""}
                 onChange={(event) =>
-                  updateForm("price", event.target.value)
+                  updateForm(
+                    "price",
+                    event.target.value
+                  )
                 }
                 required
               />
             </div>
 
+            {/* موجودی */}
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="edit-product-quantity">موجودی</Label>
+              <Label htmlFor="edit-product-quantity">
+                موجودی
+              </Label>
+
               <Input
                 id="edit-product-quantity"
                 type="number"
@@ -188,76 +278,116 @@ export default function ProductEditModal({
                 step="1"
                 value={form?.quantity ?? ""}
                 onChange={(event) =>
-                  updateForm("quantity", event.target.value)
+                  updateForm(
+                    "quantity",
+                    event.target.value
+                  )
                 }
                 required
               />
             </div>
 
+            {/* دسته‌بندی */}
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="edit-product-category">دسته‌بندی</Label>
+              <Label htmlFor="edit-product-category">
+                دسته‌بندی
+              </Label>
+
               <select
                 id="edit-product-category"
                 value={form?.category ?? ""}
                 onChange={(event) =>
-                  updateForm("category", event.target.value)
+                  updateForm(
+                    "category",
+                    event.target.value
+                  )
                 }
                 required
                 className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm"
               >
-                <option value="">انتخاب دسته‌بندی</option>
+                <option value="">
+                  انتخاب دسته‌بندی
+                </option>
+
                 {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
+                  <option
+                    key={category.id}
+                    value={category.id}
+                  >
                     {category.name}
                   </option>
                 ))}
               </select>
             </div>
 
+            {/* زیردسته */}
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="edit-product-subcategory">زیردسته</Label>
+              <Label htmlFor="edit-product-subcategory">
+                زیردسته
+              </Label>
+
               <select
                 id="edit-product-subcategory"
                 value={form?.subcategory ?? ""}
                 onChange={(event) =>
-                  updateForm("subcategory", event.target.value)
+                  updateForm(
+                    "subcategory",
+                    event.target.value
+                  )
                 }
                 required
                 disabled={!form?.category}
                 className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
               >
-                <option value="">انتخاب زیردسته</option>
-                {availableSubcategories.map((subcategory) => (
-                  <option
-                    key={subcategory.id}
-                    value={subcategory.id}
-                  >
-                    {subcategory.name}
-                  </option>
-                ))}
+                <option value="">
+                  انتخاب زیردسته
+                </option>
+
+                {availableSubcategories.map(
+                  (subcategory) => (
+                    <option
+                      key={subcategory.id}
+                      value={subcategory.id}
+                    >
+                      {subcategory.name}
+                    </option>
+                  )
+                )}
               </select>
             </div>
           </div>
 
+          {/* توضیحات */}
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="edit-product-description">توضیحات</Label>
+            <Label htmlFor="edit-product-description">
+              توضیحات
+            </Label>
+
             <textarea
               id="edit-product-description"
               rows={4}
               value={form?.description ?? ""}
               onChange={(event) =>
-                updateForm("description", event.target.value)
+                updateForm(
+                  "description",
+                  event.target.value
+                )
               }
               className="w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm"
             />
           </div>
 
+          {/* خطا */}
           {errorMessage && (
-            <p role="alert" className="text-sm text-destructive">
+            <p
+              role="alert"
+              className="text-sm text-destructive"
+            >
               {errorMessage}
             </p>
           )}
 
+          {/* دکمه‌ها */}
           <DialogFooter className="sm:justify-end">
             <Button
               type="button"
@@ -267,8 +397,14 @@ export default function ProductEditModal({
             >
               انصراف
             </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending ? "در حال ذخیره..." : "ذخیره تغییرات"}
+
+            <Button
+              type="submit"
+              disabled={isPending}
+            >
+              {isPending
+                ? "در حال ذخیره..."
+                : "ذخیره تغییرات"}
             </Button>
           </DialogFooter>
         </form>
@@ -276,3 +412,4 @@ export default function ProductEditModal({
     </Dialog>
   );
 }
+

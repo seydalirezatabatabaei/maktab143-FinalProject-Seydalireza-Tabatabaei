@@ -1,14 +1,14 @@
 {
   "products": [
     {
-      "name": "Aspire 5 A515",
+      "name": "Aspire 5 A515ییی",
       "brand": "Acer",
       "image": [
         "lab2",
         "lab3"
       ],
       "thumbnail": "lab2",
-      "price": 8888888,
+      "price": 88888885,
       "quantity": 8,
       "createdAt": 1768122000000,
       "id": 2,
