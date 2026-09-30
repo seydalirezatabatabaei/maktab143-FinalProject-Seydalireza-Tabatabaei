@@ -18,6 +18,10 @@ const navigationData: NavigationSection[] = [
     title: "سفارشات",
     href: "/admin/Orders",
   },
+  {
+    title: "دیدگاه‌ها",
+    href: "/admin/comments",
+  },
 ];
 
 export default function AdminLayout({

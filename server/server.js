@@ -211,6 +211,60 @@ server.post("/auth/refresh-token", async function (req, res, next) {
   }
 });
 
+// Public visitors can read approved comments and submit comments for review.
+// Only administrators can inspect hidden comments or change their status.
+server.get("/comments", (req, res) => {
+  const isAdmin = req.user?.role === "admin";
+  const productId = Number(req.query.productId);
+  const allComments = router.db.get("comments").value() || [];
+
+  if (!isAdmin && !Number.isInteger(productId)) {
+    return res.status(400).json({ message: "A productId is required." });
+  }
+
+  const requestedStatus = ["pending", "approved", "rejected"].includes(
+    String(req.query.status)
+  ) ? String(req.query.status) : undefined;
+
+  const comments = allComments
+    .filter((comment) => !Number.isInteger(productId) || comment.productId === productId)
+    .filter((comment) => isAdmin
+      ? !requestedStatus || comment.status === requestedStatus
+      : comment.status === "approved")
+    .sort((a, b) => b.createdAt - a.createdAt);
+
+  return res.json(comments);
+});
+
+server.post("/comments", (req, res) => {
+  const name = typeof req.body.name === "string" ? req.body.name.trim() : "";
+  const body = typeof req.body.body === "string" ? req.body.body.trim() : "";
+  const productId = Number(req.body.productId);
+  const rating = Number(req.body.rating);
+  const product = router.db.get("products").find({ id: productId }).value();
+
+  if (!product || name.length < 2 || name.length > 60 || body.length < 5 || body.length > 1000 ||
+      !Number.isInteger(rating) || rating < 1 || rating > 5) {
+    return res.status(400).json({
+      message: "A valid product, name, comment, and rating are required.",
+    });
+  }
+
+  const comments = router.db.get("comments").value() || [];
+  const comment = {
+    id: comments.reduce((maxId, item) => Math.max(maxId, Number(item.id) || 0), 0) + 1,
+    productId,
+    name,
+    body,
+    rating,
+    status: "pending",
+    createdAt: Date.now(),
+  };
+
+  router.db.get("comments").push(comment).write();
+  return res.status(201).json(comment);
+});
+
 // Use default router (CRUDs of db.json)
 server.use(router);
 

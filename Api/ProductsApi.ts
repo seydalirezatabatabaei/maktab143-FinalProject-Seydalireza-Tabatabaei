@@ -4,6 +4,8 @@ import {
   Category,
   SubCategory,
   Product,
+  ProductComment,
+  ProductCommentStatus,
 } from "@/app/types/types";
 
 export const API_BASE_URL =
@@ -204,5 +206,45 @@ export const deleteProduct = async (
   id: number
 ): Promise<void> => {
   await api.delete(`/products/${id}`);
+};
+
+export const getProductComments = async (
+  productId: number
+): Promise<ProductComment[]> => {
+  const response = await api.get<ProductComment[]>("/comments", {
+    params: { productId },
+  });
+  return response.data;
+};
+
+export const getAdminComments = async (
+  status?: ProductCommentStatus
+): Promise<ProductComment[]> => {
+  const response = await api.get<ProductComment[]>("/comments", {
+    params: status ? { status } : {},
+  });
+  return response.data;
+};
+
+export const createProductComment = async (comment: {
+  productId: number;
+  name: string;
+  body: string;
+  rating: number;
+}): Promise<ProductComment> => {
+  const response = await api.post<ProductComment>("/comments", comment);
+  return response.data;
+};
+
+export const updateProductCommentStatus = async (
+  id: number,
+  status: ProductCommentStatus
+): Promise<ProductComment> => {
+  const response = await api.patch<ProductComment>(`/comments/${id}`, { status });
+  return response.data;
+};
+
+export const deleteProductComment = async (id: number): Promise<void> => {
+  await api.delete(`/comments/${id}`);
 };
 

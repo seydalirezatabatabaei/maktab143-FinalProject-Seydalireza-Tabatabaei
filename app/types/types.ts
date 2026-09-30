@@ -61,6 +61,18 @@ export interface Order {
   createdAt: number;
 }
 
+export type ProductCommentStatus = "pending" | "approved" | "rejected";
+
+export interface ProductComment {
+  id: number;
+  productId: number;
+  name: string;
+  body: string;
+  rating: number;
+  status: ProductCommentStatus;
+  createdAt: number;
+}
+
 export interface OrderResponse {
   data: Order[];
   pages: number;

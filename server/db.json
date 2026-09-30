@@ -885,6 +885,7 @@
       "category": 8
     }
   ],
+  "comments": [],
   "orders": [
     {
       "username": "علی",
@@ -1280,6 +1281,11 @@
     }
   ],
   "protection": {
+    "comments.get": false,
+    "comments.post": false,
+    "comments.patch": "admin",
+    "comments.delete": "admin",
+    "comments": "admin",
     "products.get": false,
     "orders.post": false,
     "products.post": false,
