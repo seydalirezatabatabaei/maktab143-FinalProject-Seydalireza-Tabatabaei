@@ -15,6 +15,7 @@ interface CartContextValue {
   addItem: (product: Product, count?: number) => void;
   setItemCount: (productId: number, count: number) => void;
   removeItem: (productId: number) => void;
+  clearCart: () => void;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -71,6 +72,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const removeItem = useCallback((productId: number) => {
     setItems((current) => current.filter((item) => item.product.id !== productId));
   }, []);
+  const clearCart = useCallback(() => setItems([]), []);
 
   const value = useMemo(() => ({
     items,
@@ -78,7 +80,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     addItem,
     setItemCount,
     removeItem,
-  }), [items, addItem, setItemCount, removeItem]);
+    clearCart,
+  }), [items, addItem, setItemCount, removeItem, clearCart]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

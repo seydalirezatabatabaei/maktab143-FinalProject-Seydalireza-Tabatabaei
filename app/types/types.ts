@@ -57,6 +57,7 @@ export interface Order {
   products: OrderProduct[];
   prices: number;
   delivered: "true" | "false";
+  paymentStatus?: "pending" | "paid" | "failed";
   createdAt: number;
 }
 
