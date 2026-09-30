@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/app/store/cart-context";
 import RelatedProductsSlider from "@/components/related-products-slider";
 import ProductComments from "@/components/product-comments";
+import LowStockNotice from "@/components/low-stock-notice";
 
 interface ProductDetailPageProps {
   params: Promise<{ id: string }>;
@@ -90,6 +91,10 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
           <div className="flex flex-col rounded-[2rem] border border-white/80 bg-white/55 p-6 shadow-[0_24px_70px_rgba(57,47,90,0.08)] backdrop-blur-xl sm:p-8">
             <p className="inline-flex w-fit rounded-full bg-[#9dd9d2]/35 px-3 py-1 text-sm font-semibold text-[#326d68]">{product.brand}</p>
             <h1 className="mt-4 text-3xl font-bold leading-tight tracking-tight text-[#392f5a] sm:text-4xl">{product.name}</h1>
+
+            <div className="mt-4">
+              <LowStockNotice quantity={product.quantity} />
+            </div>
 
             <div className="mt-6 rounded-2xl border border-[#f4d06f]/60 bg-gradient-to-l from-[#f4d06f]/35 to-[#fff8f0]/80 p-5">
               <p className="text-xs font-medium text-[#706780]">قیمت محصول</p>

@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Product } from "@/app/types/types";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/app/store/cart-context";
+import LowStockNotice from "@/components/low-stock-notice";
 
 interface ProductCardProps {
   product: Product;
@@ -26,6 +27,7 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
           alt={product.name}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
+        <LowStockNotice quantity={product.quantity} compact />
       </div>
       <CardContent className="p-3">
         <h3 className="line-clamp-2 text-sm font-medium leading-tight">
