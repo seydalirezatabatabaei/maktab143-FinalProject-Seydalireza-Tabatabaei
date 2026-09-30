@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { AccordionLoader } from "@/components/accordion-loader";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/app/store/cart-context";
+import RelatedProductsSlider from "@/components/related-products-slider";
 
 interface ProductDetailPageProps {
   params: Promise<{ id: string }>;
@@ -129,6 +130,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
             </div>
           </div>
         </div>
+        <RelatedProductsSlider product={product} />
       </div>
     </div>
   );
