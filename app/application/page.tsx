@@ -106,10 +106,10 @@ export default function HomePage() {
           </aside>
 
  {/* Hero */}
-  <section className="relative isolate overflow-hidden bg-[#eae9f4] p-7 sm:p-10 xl:p-14">
+  <section className="relative isolate overflow-hidden rounded-[2rem] border border-white/70 bg-[#9dd9d2]/55 p-7 shadow-[0_24px_70px_rgba(57,47,90,0.10)] backdrop-blur-xl sm:p-10 xl:p-14">
             <div className="grid items-center gap-8 md:grid-cols-2">
               <div className="relative z-10">
-                <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-indigo-600">
+                <span className="inline-flex items-center gap-2 rounded-full bg-[#fff8f0]/85 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-[#392f5a]">
                   <Zap size={13} />
                    هر روز خودت را بهتر کن 
                 </span>
@@ -117,7 +117,7 @@ export default function HomePage() {
 <h1 className="mt-6 text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl xl:text-6xl">
                   فناوری بهتر
                   <br />
-                  <span className="text-indigo-600">روز بهتر</span>
+                  <span className="text-[#ff8811]">روز بهتر</span>
                 </h1>
                 
 
@@ -128,14 +128,14 @@ export default function HomePage() {
 <Link
                   href="http://localhost:3000/application/products"
                  
-                  className="mt-7 inline-flex items-center gap-5 rounded-xl bg-slate-900 px-6 py-4 text-sm font-semibold text-white transition hover:bg-indigo-600"
+                  className="mt-7 inline-flex items-center gap-5 rounded-xl bg-[#392f5a] px-6 py-4 text-sm font-semibold text-[#fff8f0] shadow-lg shadow-[#392f5a]/15 transition hover:-translate-y-1 hover:bg-[#ff8811]"
                 >
                   نیاز هاتو بخر <ArrowRight size={17} />
                 </Link>
 
 <div className="mt-7 flex items-center gap-2 text-xs text-slate-500">
                   <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white">
-                    <Check size={12} className="text-indigo-600" />
+                    <Check size={12} className="text-[#392f5a]" />
                   </span>
                   ساخته شده برای روش زندگی شما
                 </div>
@@ -143,7 +143,7 @@ export default function HomePage() {
 
 <div className="relative mx-auto w-full max-w-md">
                 <div className="absolute inset-4 rounded-full bg-white/40 blur-2xl" />
-                <div className="relative aspect-square overflow-hidden rounded-full border-[12px] border-white/40 bg-[#f4d76a] shadow-2xl shadow-indigo-900/10">
+                <div className="relative aspect-square overflow-hidden rounded-full border-[12px] border-[#fff8f0]/65 bg-[#f4d06f] shadow-2xl shadow-[#392f5a]/15">
                   <Image
                     src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1000&q=85"
                     alt="Over-ear headphones on a yellow background"
@@ -200,7 +200,7 @@ export default function HomePage() {
     },
   ].map(({ icon: Icon, title, text }) => (
     <div key={title} className="flex items-center gap-3">
-      <div className="rounded-xl bg-slate-50 p-3 text-indigo-600">
+      <div className="rounded-xl bg-[#9dd9d2]/35 p-3 text-[#392f5a]">
         <Icon size={22} />
       </div>
       <div>

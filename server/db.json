@@ -1146,7 +1146,7 @@
         }
       ],
       "prices": 6950000,
-      "delivered": "false",
+      "delivered": "true",
       "createdAt": 1780790400000,
       "id": 9
     },

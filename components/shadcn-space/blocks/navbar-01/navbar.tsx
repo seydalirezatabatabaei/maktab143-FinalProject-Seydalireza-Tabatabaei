@@ -44,7 +44,7 @@ const Navbar = ({ navigationData }: NavbarProps) => {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-100 bg-[#caf0f8]">
+    <header className="glass-surface sticky top-0 z-40 w-full rounded-b-2xl border-x-0 border-t-0 bg-white/65 shadow-[0_8px_28px_rgba(66,50,120,0.08)] backdrop-blur-2xl">
       <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
         <nav
           className={cn(
@@ -73,7 +73,7 @@ const Navbar = ({ navigationData }: NavbarProps) => {
                     className={cn(
                       "px-4 py-2 rounded-md transition-colors",
                       isActive
-                        ? "bg-green-600 text-white"
+                        ? "bg-[#392f5a] text-[#fff8f0] shadow-md shadow-[#392f5a]/15"
                         : "bg-transparent text-gray-700 hover:bg-gray-100"
                     )}
                   >

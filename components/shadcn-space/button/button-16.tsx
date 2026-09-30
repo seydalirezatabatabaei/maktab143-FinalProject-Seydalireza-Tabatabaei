@@ -29,12 +29,12 @@ const ButtonDemo = () => {
       onMouseEnter={handleMouseEnter}
       onClick={handleClick}
       variant="outline"
-      className="relative overflow-hidden group px-6 py-3 h-auto rounded-full cursor-pointer border bg-[#2a9d8f] text-white transition-all duration-300 hover:bg-green-100"
+      className="relative overflow-hidden group px-6 py-3 h-auto rounded-full cursor-pointer border bg-[#392f5a] text-[#fff8f0] transition-all duration-300 hover:bg-[#9dd9d2] hover:text-[#392f5a]"
     >
       <span
         className={cn(
           "absolute w-10 h-10 rounded-full scale-0 transition-transform duration-700 ease-in-out group-hover:scale-[15] pointer-events-none",
-          "bg-[#6a994e]"
+          "bg-[#ff8811]"
         )}
         style={{
           left: pos.x - 20,

@@ -4,6 +4,8 @@ import "./globals.css";
 import { Providers } from "@/app/admin/providers";
 import localFont from "next/font/local";
 import { NavigationSection } from "./types/types";
+import { CartProvider } from "@/app/store/cart-context";
+import SiteFooter from "@/components/site-footer";
 
 
 const navigationData: NavigationSection[] = [
@@ -43,7 +45,12 @@ export default function RootLayout({
     <html lang="fa" dir="rtl" >
       <body className={persianFont.variable}>
       
-        <Providers>{children}</Providers>
+        <CartProvider>
+          <Providers>
+            {children}
+            <SiteFooter />
+          </Providers>
+        </CartProvider>
       </body>
     </html>
   );

@@ -57,7 +57,7 @@ export default function CartDialog() {
       >
         <ShoppingCart size={20} />
         <span className="hidden sm:inline">سبد خرید</span>
-        {itemCount > 0 && <span className="min-w-5 rounded-full bg-green-600 px-1.5 py-0.5 text-center text-xs text-white">{itemCount}</span>}
+        {itemCount > 0 && <span className="min-w-5 rounded-full bg-primary px-1.5 py-0.5 text-center text-xs text-primary-foreground">{itemCount}</span>}
       </Button>
 
       <DialogContent

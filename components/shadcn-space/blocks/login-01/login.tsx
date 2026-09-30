@@ -71,11 +71,11 @@ const LoginForm = () => {
 };
 
   return (
-    <section className="bg-[#fff3b0] dark:bg-background min-h-screen flex items-center justify-center relative">
+    <section className="bg-[#fff8f0] dark:bg-background min-h-screen flex items-center justify-center relative">
       <div className="pointer-events-none absolute inset-0 right-0 overflow-hidden md:block hidden">
-        <div className="absolute left-1/1 top-0 h-650 w-650 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#f3de2c]" />
+        <div className="absolute left-1/1 top-0 h-650 w-650 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#f4d06f]" />
 
-        <div className="absolute left-1/1 top-0 h-175 w-175 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#f8bb66] dark:bg-background" />
+        <div className="absolute left-1/1 top-0 h-175 w-175 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ff8811] dark:bg-background" />
       </div>
 
       <div className="py-10 md:py-20 max-w-lg px-4 sm:px-0 mx-auto w-full">

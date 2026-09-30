@@ -182,7 +182,7 @@ export default function PanelAdmin() {
     return (
       <div
         dir="rtl"
-        className="min-h-screen bg-[#f7f9f8] flex items-center justify-center"
+        className="min-h-screen bg-[#fff8f0] flex items-center justify-center"
       >
         <div className="flex flex-col items-center gap-4">
           <div className="w-16 h-16 rounded-2xl bg-white border border-gray-100 shadow-sm flex items-center justify-center">
@@ -205,7 +205,7 @@ export default function PanelAdmin() {
     return (
       <div
         dir="rtl"
-        className="min-h-screen bg-[#f7f9f8] flex items-center justify-center p-6"
+        className="min-h-screen bg-[#fff8f0] flex items-center justify-center p-6"
       >
         <div className="w-full max-w-md rounded-3xl bg-white border border-red-100 shadow-sm p-8 text-center">
           <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-red-50 flex items-center justify-center text-2xl">
@@ -227,7 +227,7 @@ export default function PanelAdmin() {
   return (
     <div
       dir="rtl"
-      className="min-h-screen bg-[#f7f9f8]"
+      className="min-h-screen bg-[#fff8f0]"
     >
       {/* ================================================= */}
       {/* Header */}
