@@ -48,3 +48,11 @@ export const updateOrderPaymentStatus = async (
   const response = await api.patch<Order>(`/orders/${id}`, { paymentStatus });
   return response.data;
 };
+
+export const updateOrderDelivered = async (
+  id: number,
+  delivered: "true" | "false"
+): Promise<Order> => {
+  const response = await api.patch<Order>(`/orders/${id}`, { delivered });
+  return response.data;
+};

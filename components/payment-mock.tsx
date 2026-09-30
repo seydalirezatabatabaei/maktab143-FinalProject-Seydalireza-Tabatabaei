@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { getOrder, updateOrderPaymentStatus } from "@/Api/OrdersApi";
 import type { Order } from "@/app/types/types";
 import { useCart } from "@/app/store/cart-context";
@@ -12,6 +13,7 @@ export default function PaymentMock({ orderId }: { orderId: number }) {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
+  const router = useRouter();
   const { clearCart } = useCart();
 
   const loadOrder = useCallback(async () => {
@@ -20,13 +22,18 @@ export default function PaymentMock({ orderId }: { orderId: number }) {
     try {
       const loadedOrder = await getOrder(orderId);
       setOrder(loadedOrder);
-      if (loadedOrder.paymentStatus === "paid") clearCart();
+      if (loadedOrder.paymentStatus === "paid") {
+        clearCart();
+        router.replace(`/application/payment/success?orderId=${orderId}`);
+      } else if (loadedOrder.paymentStatus === "failed") {
+        router.replace(`/application/payment/failed?orderId=${orderId}`);
+      }
     } catch {
       setError("اطلاعات سفارش دریافت نشد. دوباره تلاش کنید.");
     } finally {
       setLoading(false);
     }
-  }, [orderId, clearCart]);
+  }, [orderId, clearCart, router]);
 
   useEffect(() => { void loadOrder(); }, [loadOrder]);
 
@@ -36,7 +43,12 @@ export default function PaymentMock({ orderId }: { orderId: number }) {
     try {
       const updatedOrder = await updateOrderPaymentStatus(orderId, paymentStatus);
       setOrder(updatedOrder);
-      if (paymentStatus === "paid") clearCart();
+      if (paymentStatus === "paid") {
+        clearCart();
+        router.push(`/application/payment/success?orderId=${orderId}`);
+      } else {
+        router.push(`/application/payment/failed?orderId=${orderId}`);
+      }
     } catch {
       setError("ثبت نتیجه‌ی پرداخت انجام نشد. اتصال به سرور را بررسی کنید.");
     } finally {

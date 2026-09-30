@@ -2,9 +2,9 @@
 
 import React, { useState } from "react";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { getOrders } from "@/Api/OrdersApi";
+import { getOrders, updateOrderDelivered } from "@/Api/OrdersApi";
 
 import { AccordionLoader } from "@/components/accordion-loader";
 
@@ -22,6 +22,15 @@ export default function OrdersPage() {
   // -----------------------------
 
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const queryClient = useQueryClient();
+
+  const deliveryMutation = useMutation({
+    mutationFn: ({ id, delivered }: { id: number; delivered: "true" | "false" }) =>
+      updateOrderDelivered(id, delivered),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["orders"] });
+    },
+  });
 
   const handleSortByTime = () => {
     setSortOrder((prev) =>
@@ -168,14 +177,15 @@ export default function OrdersPage() {
           page={page}
           totalPages={totalPages}
           onPageChange={setPage}
+          updatingOrderId={deliveryMutation.isPending ? deliveryMutation.variables?.id ?? null : null}
+          onToggleDelivery={async (order) => {
+            await deliveryMutation.mutateAsync({
+              id: order.id,
+              delivered: order.delivered === "true" ? "false" : "true",
+            });
+          }}
           onSortByTime={handleSortByTime}
           sortOrder={sortOrder}
-          onReview={(order) => {
-            console.log(
-              "بررسی سفارش:",
-              order
-            );
-          }}
         />
 
       </main>

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import { useState } from "react";
 
 import {
   Table,
@@ -17,13 +17,23 @@ import { Button } from "@/components/ui/button";
 import { PaginationFunc } from "@/components/ui/PaginationCom";
 
 import { Order } from "@/app/types/types";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { getProductImageSrc } from "@/Api/ProductsApi";
 
 interface OrdersTableProps {
   orders: Order[];
   page: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  onReview: (order: Order) => void;
+  onToggleDelivery: (order: Order) => Promise<void>;
+  updatingOrderId: number | null;
 
   onSortByTime: () => void;
   sortOrder: "asc" | "desc";
@@ -34,10 +44,13 @@ export default function OrdersTable({
   page,
   totalPages,
   onPageChange,
-  onReview,
+  onToggleDelivery,
+  updatingOrderId,
   onSortByTime,
   sortOrder,
 }: OrdersTableProps) {
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [statusError, setStatusError] = useState("");
   // -----------------------------
   // Convert date to Persian/Jalali
   // -----------------------------
@@ -194,7 +207,10 @@ export default function OrdersTable({
                       <Button
                         type="button"
                         variant="ghost"
-                        onClick={() => onReview(order)}
+                        onClick={() => {
+                          setStatusError("");
+                          setSelectedOrder(order);
+                        }}
                         className="h-9 rounded-xl px-4 text-xs font-semibold text-emerald-600 transition-all hover:bg-emerald-50 hover:text-emerald-700"
                       >
                         <span className="ml-2">↗</span>
@@ -233,6 +249,75 @@ export default function OrdersTable({
           </TableFooter>
         </Table>
       </div>
+      <Dialog
+        open={selectedOrder !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedOrder(null);
+            setStatusError("");
+          }
+        }}
+      >
+        {selectedOrder && (
+          <DialogContent dir="rtl" className="max-h-[85vh] max-w-2xl overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>جزئیات سفارش #{selectedOrder.id}</DialogTitle>
+              <DialogDescription>اطلاعات خریدار، اقلام سفارش و وضعیت ارسال</DialogDescription>
+            </DialogHeader>
+
+            <div className="grid gap-3 rounded-lg bg-muted/50 p-4 text-sm sm:grid-cols-2">
+              <p><span className="text-muted-foreground">نام خریدار: </span>{selectedOrder.username} {selectedOrder.lastname}</p>
+              <p><span className="text-muted-foreground">شماره تماس: </span>{selectedOrder.phone}</p>
+              <p className="sm:col-span-2"><span className="text-muted-foreground">نشانی: </span>{selectedOrder.address}</p>
+              <p><span className="text-muted-foreground">تاریخ ثبت: </span>{formatDate(selectedOrder.createdAt)}، {formatTime(selectedOrder.createdAt)}</p>
+              <p><span className="text-muted-foreground">تاریخ تقریبی تحویل: </span>{formatDate(selectedOrder.expectAt)}</p>
+            </div>
+
+            <div>
+              <h3 className="mb-2 font-semibold">محصولات سفارش</h3>
+              <ul className="divide-y rounded-lg border px-3">
+                {selectedOrder.products.map((product, index) => (
+                  <li key={`${product.id}-${index}`} className="flex items-center gap-3 py-3">
+                    <img src={getProductImageSrc(product.image)} alt={product.name} className="h-12 w-12 rounded-md bg-muted object-cover" />
+                    <span className="min-w-0 flex-1 text-sm">{product.name}</span>
+                    <span className="shrink-0 text-xs text-muted-foreground">{product.count} عدد</span>
+                    <span className="shrink-0 text-sm font-medium">{(Number(product.price) * Number(product.count)).toLocaleString("fa-IR")} تومان</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-3 text-left font-bold">مبلغ کل: {selectedOrder.prices.toLocaleString("fa-IR")} تومان</p>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border p-3 text-sm">
+              <span>وضعیت ارسال</span>
+              <span className={selectedOrder.delivered === "true" ? "rounded-full bg-green-100 px-3 py-1 font-medium text-green-700" : "rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-700"}>
+                {selectedOrder.delivered === "true" ? "ارسال شده" : "در انتظار ارسال"}
+              </span>
+            </div>
+
+            {statusError && <p role="alert" className="text-sm text-destructive">{statusError}</p>}
+
+            <DialogFooter className="sm:flex-row">
+              <Button
+                disabled={updatingOrderId === selectedOrder.id}
+                onClick={async () => {
+                  setStatusError("");
+                  try {
+                    await onToggleDelivery(selectedOrder);
+                    setSelectedOrder(null);
+                  } catch {
+                    setStatusError("تغییر وضعیت سفارش ذخیره نشد. دوباره تلاش کنید.");
+                  }
+                }}
+              >
+                {updatingOrderId === selectedOrder.id
+                  ? "در حال ذخیره..."
+                  : selectedOrder.delivered === "true" ? "علامت‌گذاری به‌عنوان ارسال‌نشده" : "علامت‌گذاری به‌عنوان ارسال‌شده"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
     </div>
   );
 }
