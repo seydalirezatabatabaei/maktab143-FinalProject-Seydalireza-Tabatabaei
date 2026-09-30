@@ -3,6 +3,8 @@
 import { getProductImageSrc } from "@/Api/ProductsApi";
 import { Card, CardContent } from "@/components/ui/card";
 import { Product } from "@/app/types/types";
+import { Button } from "@/components/ui/button";
+import { useCart } from "@/app/store/cart-context";
 
 interface ProductCardProps {
   product: Product;
@@ -11,6 +13,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, onClick }: ProductCardProps) {
   const imageSrc = getProductImageSrc(product.image);
+  const { addItem } = useCart();
 
   return (
     <Card
@@ -32,6 +35,10 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
         <p className="mt-2 text-sm font-bold text-primary">
           {product.price.toLocaleString("fa-IR")} تومان
         </p>
+        <Button className="mt-3 w-full" size="sm" disabled={product.quantity < 1}
+          onClick={(event) => { event.stopPropagation(); addItem(product); }}>
+          {product.quantity < 1 ? "ناموجود" : "افزودن به سبد"}
+        </Button>
       </CardContent>
     </Card>
   );

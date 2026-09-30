@@ -9,11 +9,12 @@ import {
   NavigationMenu, NavigationMenuList,
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
-import { Search, TextAlignJustify } from "lucide-react";
+import { Search, ShoppingCart, TextAlignJustify } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import ButtonDemo from "../../button/button-16";
+import { useCart } from "@/app/store/cart-context";
 
 interface NavbarProps {
   navigationData: NavigationSection[];
@@ -41,6 +42,7 @@ const Navbar = ({ navigationData }: NavbarProps) => {
   }, [handleScroll, handleResize]);
 
   const pathname = usePathname();
+  const { itemCount } = useCart();
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-100 bg-[#caf0f8]">
@@ -91,6 +93,12 @@ const Navbar = ({ navigationData }: NavbarProps) => {
               className="w-full bg-transparent text-sm outline-none"
             />
           </label>
+
+          <Link href="/application/cart" aria-label={`سبد خرید، ${itemCount} کالا`} className="relative flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium hover:bg-white/60">
+            <ShoppingCart size={20} />
+            <span className="hidden sm:inline">سبد خرید</span>
+            {itemCount > 0 && <span className="min-w-5 rounded-full bg-green-600 px-1.5 py-0.5 text-center text-xs text-white">{itemCount}</span>}
+          </Link>
 
          
 

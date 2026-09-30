@@ -1,15 +1,15 @@
 {
   "products": [
     {
-      "name": "Aspire 5 A515ییی",
+      "name": "Aspire 5 A515یییییییییی",
       "brand": "Acer",
       "image": [
         "lab2",
         "lab3"
       ],
       "thumbnail": "lab2",
-      "price": 88888885,
-      "quantity": 8,
+      "price": 7,
+      "quantity": 18,
       "createdAt": 1768122000000,
       "id": 2,
       "category": 1,
@@ -24,7 +24,7 @@
         "lab4"
       ],
       "thumbnail": "lab3",
-      "price": 33500000,
+      "price": 20,
       "quantity": 21,
       "createdAt": 1777791600000,
       "id": 3,
@@ -641,7 +641,7 @@
       "description": "<p>65W GaN Charger محصولی با کیفیت از برند Anker مناسب استفاده روزمره و حرفه‌ای است.</p>"
     },
     {
-      "name": "20W USB-C Charger",
+      "name": "20W USB-C Charger22222",
       "brand": "UGREEN",
       "image": [
         "lab2",
@@ -719,83 +719,6 @@
       "category": 8,
       "subcategory": 22,
       "description": "<p>980 PRO 1TB محصولی با کیفیت از برند Samsung مناسب استفاده روزمره و حرفه‌ای است.</p>"
-    },
-    {
-      "name": "SN770 1TB",
-      "brand": "WD",
-      "image": [
-        "lab7",
-        "lab8"
-      ],
-      "thumbnail": "lab7",
-      "price": 7600000,
-      "quantity": 22,
-      "createdAt": 1766246400000,
-      "id": 47,
-      "category": 8,
-      "subcategory": 22,
-      "description": "<p>SN770 1TB محصولی با کیفیت از برند WD مناسب استفاده روزمره و حرفه‌ای است.</p>"
-    },
-    {
-      "name": "My Passport 2TB",
-      "brand": "WD",
-      "image": [
-        "lab8",
-        "lab9"
-      ],
-      "thumbnail": "lab8",
-      "price": 6200000,
-      "quantity": 3,
-      "createdAt": 1779033600000,
-      "id": 48,
-      "category": 8,
-      "subcategory": 23,
-      "description": "<p>My Passport 2TB محصولی با کیفیت از برند WD مناسب استفاده روزمره و حرفه‌ای است.</p>"
-    },
-    {
-      "name": "Canvio Basics 2TB",
-      "brand": "Toshiba",
-      "image": [
-        "lab9",
-        "lab10"
-      ],
-      "thumbnail": "lab9",
-      "price": 5700000,
-      "quantity": 42,
-      "createdAt": 1768755600000,
-      "id": 49,
-      "category": 8,
-      "subcategory": 23,
-      "description": "<p>Canvio Basics 2TB محصولی با کیفیت از برند Toshiba مناسب استفاده روزمره و حرفه‌ای است.</p>"
-    },
-    {
-      "name": "DataTraveler 128GB",
-      "brand": "Kingston",
-      "image": [
-        "lab10",
-        "lab1"
-      ],
-      "thumbnail": "lab10",
-      "price": 1250000,
-      "quantity": 34,
-      "createdAt": 1781355600000,
-      "id": 50,
-      "category": 8,
-      "subcategory": 24,
-      "description": "<p>DataTraveler 128GB محصولی با کیفیت از برند Kingston مناسب استفاده روزمره و حرفه‌ای است.</p>"
-    },
-    {
-      "name": "ali",
-      "brand": "lenovo",
-      "image": "http://localhost:3002/files/506d1e5ba3042dddbc597489d836228a",
-      "price": 2500000,
-      "quantity": 5,
-      "category": 1,
-      "subcategory": "1",
-      "description": "dfsfasdfa",
-      "thumbnail": "http://localhost:3002/files/506d1e5ba3042dddbc597489d836228a",
-      "createdAt": 1790261475091,
-      "id": 51
     }
   ],
   "category": [

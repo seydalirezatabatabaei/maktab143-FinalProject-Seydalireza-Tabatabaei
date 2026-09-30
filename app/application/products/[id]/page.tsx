@@ -8,6 +8,7 @@ import { Product } from "@/app/types/types";
 import { Button } from "@/components/ui/button";
 import { AccordionLoader } from "@/components/accordion-loader";
 import { Separator } from "@/components/ui/separator";
+import { useCart } from "@/app/store/cart-context";
 
 interface ProductDetailPageProps {
   params: Promise<{ id: string }>;
@@ -16,6 +17,7 @@ interface ProductDetailPageProps {
 export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const { id } = use(params);
   const productId = Number(id);
+  const { addItem } = useCart();
 
   const {
     data: product,
@@ -118,9 +120,9 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                 بازگشت
               </Button>
               <Button
-                disabled
-                className="flex-1 cursor-not-allowed opacity-60"
-                title="عملکرد این دکمه غیر_faactive است"
+                disabled={product.quantity < 1}
+                className="flex-1"
+                onClick={() => addItem(product)}
               >
                 افزودن به سبد
               </Button>

@@ -5,6 +5,7 @@ import { Providers } from "@/app/admin/providers";
 import localFont from "next/font/local";
 import { NavigationSection } from "../types/types";
 import Navbar from "@/components/shadcn-space/blocks/navbar-01/navbar";
+import { CartProvider } from "@/app/store/cart-context";
 
 const navigationData: NavigationSection[] = [
   
@@ -18,7 +19,7 @@ const navigationData: NavigationSection[] = [
   },
   {
     title: " سبد خرید ",
-    href: "#",
+    href: "/application/cart",
   },
 ];
 
@@ -42,8 +43,10 @@ export default function RootLayout({
   return (
     <html lang="fa" dir="rtl" >
       <body className={persianFont.variable}>
-         <Navbar navigationData={navigationData} />
-        <Providers>{children}</Providers>
+        <CartProvider>
+          <Navbar navigationData={navigationData} />
+          <Providers>{children}</Providers>
+        </CartProvider>
       </body>
     </html>
   );

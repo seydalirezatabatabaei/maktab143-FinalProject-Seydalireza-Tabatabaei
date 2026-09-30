@@ -1,10 +1,10 @@
-import { Vazirmatn, Geist } from "next/font/google";
+
 import "./globals.css";
-import { cn } from "@/lib/utils";
+
 import { Providers } from "@/app/admin/providers";
 import localFont from "next/font/local";
 import { NavigationSection } from "./types/types";
-import Navbar from "@/components/shadcn-space/blocks/navbar-01/navbar";
+
 
 const navigationData: NavigationSection[] = [
   
