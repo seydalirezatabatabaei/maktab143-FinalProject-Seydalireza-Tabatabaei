@@ -1,15 +1,17 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MessageCircle, Send, Star } from "lucide-react";
 import { createProductComment, getProductComments } from "@/Api/ProductsApi";
 import { Button } from "@/components/ui/button";
+import { productCommentSchema, type ProductCommentFormValues } from "@/lib/form-schemas";
 
 export default function ProductComments({ productId }: { productId: number }) {
-  const [name, setName] = useState("");
-  const [body, setBody] = useState("");
-  const [rating, setRating] = useState(5);
+  const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<ProductCommentFormValues>({ resolver: zodResolver(productCommentSchema), defaultValues: { name: "", body: "", rating: 5 } });
+  const rating = watch("rating");
   const [feedback, setFeedback] = useState("");
   const queryClient = useQueryClient();
 
@@ -21,17 +23,16 @@ export default function ProductComments({ productId }: { productId: number }) {
   const submitMutation = useMutation({
     mutationFn: createProductComment,
     onSuccess: async () => {
-      setBody("");
+      reset({ name: watch("name"), body: "", rating: 5 });
       setFeedback("دیدگاه شما برای بررسی و انتشار ارسال شد.");
       await queryClient.invalidateQueries({ queryKey: ["product-comments", productId] });
     },
     onError: () => setFeedback("ارسال دیدگاه انجام نشد. اتصال به سرور را بررسی کنید."),
   });
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const submitComment = (values: ProductCommentFormValues) => {
     setFeedback("");
-    submitMutation.mutate({ productId, name: name.trim(), body: body.trim(), rating });
+    submitMutation.mutate({ productId, ...values });
   };
 
   const averageRating = comments.length
@@ -87,21 +88,22 @@ export default function ProductComments({ productId }: { productId: number }) {
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="h-fit rounded-[2rem] border border-white/80 bg-gradient-to-br from-[#fff8f0]/95 to-[#9dd9d2]/30 p-5 shadow-[0_20px_55px_rgba(57,47,90,0.07)] backdrop-blur-xl sm:p-7">
+      <form onSubmit={handleSubmit(submitComment)} className="h-fit rounded-[2rem] border border-white/80 bg-gradient-to-br from-[#fff8f0]/95 to-[#9dd9d2]/30 p-5 shadow-[0_20px_55px_rgba(57,47,90,0.07)] backdrop-blur-xl sm:p-7">
         <p className="mb-1 text-xs font-semibold text-[#b85c00]">نظر شما ارزشمند است</p>
         <h3 className="text-xl font-bold text-[#392f5a]">دیدگاهت را بنویس</h3>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">پس از بررسی مدیر، دیدگاه شما در صفحه نمایش داده می‌شود.</p>
 
         <label className="mt-5 block text-sm font-medium text-[#392f5a]">
           نام شما
-          <input required minLength={2} maxLength={60} value={name} onChange={(event) => setName(event.target.value)} className="mt-2 w-full rounded-xl border border-[#392f5a]/15 bg-white/75 px-4 py-3 outline-none focus:border-[#ff8811]" placeholder="نام خود را وارد کنید" />
+          <input maxLength={60} {...register("name")} className="mt-2 w-full rounded-xl border border-[#392f5a]/15 bg-white/75 px-4 py-3 outline-none focus:border-[#ff8811]" placeholder="نام خود را وارد کنید" />
+          {errors.name && <span role="alert" className="mt-1 block text-xs text-destructive">{errors.name.message}</span>}
         </label>
 
         <fieldset className="mt-4">
           <legend className="text-sm font-medium text-[#392f5a]">امتیاز شما</legend>
           <div className="mt-2 flex gap-1" role="radiogroup" aria-label="امتیاز محصول">
             {[1, 2, 3, 4, 5].map((value) => (
-              <button key={value} type="button" role="radio" aria-checked={rating === value} aria-label={`${value} از ۵`} onClick={() => setRating(value)} className="rounded-md p-1 text-[#ff8811] transition-transform hover:scale-125">
+              <button key={value} type="button" role="radio" aria-checked={rating === value} aria-label={`${value} از ۵`} onClick={() => setValue("rating", value, { shouldValidate: true, shouldDirty: true })} className="rounded-md p-1 text-[#ff8811] transition-transform hover:scale-125">
                 <Star size={23} className={value <= rating ? "fill-current" : "text-[#392f5a]/20"} />
               </button>
             ))}
@@ -110,7 +112,8 @@ export default function ProductComments({ productId }: { productId: number }) {
 
         <label className="mt-4 block text-sm font-medium text-[#392f5a]">
           دیدگاه
-          <textarea required minLength={5} maxLength={1000} rows={4} value={body} onChange={(event) => setBody(event.target.value)} className="mt-2 w-full resize-y rounded-xl border border-[#392f5a]/15 bg-white/75 px-4 py-3 outline-none focus:border-[#ff8811]" placeholder="تجربه‌تان از این محصول را بنویسید..." />
+          <textarea maxLength={1000} rows={4} {...register("body")} className="mt-2 w-full resize-y rounded-xl border border-[#392f5a]/15 bg-white/75 px-4 py-3 outline-none focus:border-[#ff8811]" placeholder="تجربه‌تان از این محصول را بنویسید..." />
+          {errors.body && <span role="alert" className="mt-1 block text-xs text-destructive">{errors.body.message}</span>}
         </label>
         {feedback && <p role="status" className={`mt-3 text-sm ${submitMutation.isError ? "text-red-700" : "text-[#326d68]"}`}>{feedback}</p>}
         <Button type="submit" disabled={submitMutation.isPending} className="mt-4 w-full gap-2 rounded-xl bg-[#392f5a] text-[#fff8f0] hover:bg-[#ff8811]">

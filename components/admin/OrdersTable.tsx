@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ShoppingCart } from "lucide-react";
 
 import {
   Table,
@@ -38,7 +39,6 @@ interface OrdersTableProps {
   onSortByTime: () => void;
   sortOrder: "asc" | "desc";
 }
-
 export default function OrdersTable({
   orders,
   page,
@@ -135,9 +135,7 @@ export default function OrdersTable({
               <TableRow>
                 <TableCell colSpan={4} className="h-64 text-center">
                   <div className="flex flex-col items-center justify-center">
-                    <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 text-2xl">
-                      🛒
-                    </div>
+                    <div className="mb-4 flex h-16 w-16 items-center justify-center border border-border text-primary"><ShoppingCart size={24} aria-hidden="true" /></div>
 
                     <h3 className="mb-1 font-bold text-gray-800">
                       سفارشی وجود ندارد
@@ -171,6 +169,12 @@ export default function OrdersTable({
                         <span className="text-xs text-gray-400">
                           سفارش #{order.id}
                         </span>
+                        <div className="inventory-readout mt-1 max-w-56">
+                          <span>وضعیت ارسال</span>
+                          <span className="inventory-readout__value">
+                            {order.delivered === "true" ? "ارسال شده" : "در انتظار"}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </TableCell>

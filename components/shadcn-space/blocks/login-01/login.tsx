@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,21 +22,14 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import Logo from "@/assets/logo/logo";
 
-import { login } from "@/Api/AuthApi";
+import { loginSchema, type LoginFormValues } from "@/lib/form-schemas";
 
 const LoginForm = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema), defaultValues: { username: "", password: "" } });
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
- const handleSubmit = async (
-  e: React.FormEvent<HTMLFormElement>
-) => {
-  e.preventDefault();
-
+ const submitLogin = async ({ username, password }: LoginFormValues) => {
   try {
-    setLoading(true);
     setError("");
 
     const response = await fetch("/api/auth/login", {
@@ -65,8 +60,6 @@ const LoginForm = () => {
     setError(
       "نام کاربری یا رمز عبور اشتباه است."
     );
-  } finally {
-    setLoading(false);
   }
 };
 
@@ -99,7 +92,7 @@ const LoginForm = () => {
           </CardHeader>
 
           <CardContent className="p-0">
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit(submitLogin)}>
               <FieldGroup className="gap-6">
                 <div className="flex flex-col gap-4">
 
@@ -116,11 +109,10 @@ const LoginForm = () => {
                       id="username"
                       type="text"
                       placeholder="نام کاربری را وارد کنید"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      required
+                      {...register("username")}
                       className="dark:bg-background h-9 shadow-xs"
                     />
+                    {errors.username && <p role="alert" className="text-xs text-red-500">{errors.username.message}</p>}
                   </Field>
 
                   {/* Password */}
@@ -136,11 +128,10 @@ const LoginForm = () => {
                       id="password"
                       type="password"
                       placeholder="رمز را اینجا وارد کنید"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
+                      {...register("password")}
                       className="dark:bg-background h-9 shadow-xs"
                     />
+                    {errors.password && <p role="alert" className="text-xs text-red-500">{errors.password.message}</p>}
                   </Field>
                 </div>
 
@@ -184,10 +175,10 @@ const LoginForm = () => {
                   <Button
                     type="submit"
                     size="lg"
-                    disabled={loading}
+                    disabled={isSubmitting}
                     className="rounded-lg h-10 hover:bg-primary/80 cursor-pointer"
                   >
-                    {loading
+                    {isSubmitting
                       ? "در حال ورود..."
                       : "بگذار داخل شوم"}
                   </Button>

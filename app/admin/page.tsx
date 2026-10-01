@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { LayoutGrid, ListTree, Package } from "lucide-react";
 import {
   useMutation,
   useQuery,
@@ -296,9 +297,7 @@ export default function PanelAdmin() {
                 </p>
               </div>
 
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl group-hover:scale-105 transition-transform">
-                📦
-              </div>
+              <div className="flex h-12 w-12 items-center justify-center border border-primary text-primary"><Package size={22} aria-hidden="true" /></div>
 
             </div>
 
@@ -320,8 +319,8 @@ export default function PanelAdmin() {
                 </p>
               </div>
 
-              <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl group-hover:scale-105 transition-transform">
-                ◈
+              <div className="flex h-12 w-12 items-center justify-center border border-primary text-primary">
+                <LayoutGrid size={22} aria-hidden="true" />
               </div>
 
             </div>
@@ -344,14 +343,21 @@ export default function PanelAdmin() {
                 </p>
               </div>
 
-              <div className="w-12 h-12 rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center text-xl group-hover:scale-105 transition-transform">
-                ≡
+              <div className="flex h-12 w-12 items-center justify-center border border-primary text-primary">
+                <ListTree size={22} aria-hidden="true" />
               </div>
 
             </div>
 
           </div>
 
+        </div>
+
+        <div className="inventory-readout mb-6">
+          <span>وضعیت موجودی / صفحه {page}</span>
+          <span className="inventory-readout__value">
+            {products.filter((product) => product.quantity > 0 && product.quantity < 5).length.toLocaleString("fa-IR")} کالا با موجودی محدود
+          </span>
         </div>
 
         {/* ================================================= */}
@@ -591,4 +597,3 @@ export default function PanelAdmin() {
     </div>
   );
 }
-

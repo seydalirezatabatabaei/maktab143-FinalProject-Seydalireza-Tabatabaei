@@ -2,6 +2,7 @@
 "use client";
 
 import React from "react";
+import { Package } from "lucide-react";
 
 import {
   Table,
@@ -55,7 +56,6 @@ interface ProductTableProps {
   onEdit?: (product: Product) => void;
   onDelete?: (product: Product) => void;
 }
-
 export default function ProductTable({
   products,
   categoryMap,
@@ -141,8 +141,8 @@ export default function ProductTable({
                 >
                   <div className="flex flex-col items-center justify-center">
 
-                    <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center text-2xl mb-4">
-                      📦
+                    <div className="mb-4 flex h-16 w-16 items-center justify-center border border-border text-primary">
+                      <Package size={24} aria-hidden="true" />
                     </div>
 
                     <h3 className="font-bold text-gray-800 mb-1">
@@ -264,6 +264,12 @@ export default function ProductTable({
                         <span className="text-xs text-gray-400">
                           شناسه کالا: #{product.id}
                         </span>
+                        <div className="inventory-readout mt-1 max-w-56">
+                          <span>موجودی</span>
+                          <span className="inventory-readout__value">
+                            {product.quantity.toLocaleString("fa-IR")} عدد / {product.quantity < 1 ? "ناموجود" : product.quantity < 5 ? "محدود" : "موجود"}
+                          </span>
+                        </div>
 
                       </div>
 
@@ -448,4 +454,3 @@ export default function ProductTable({
     </div>
   );
 }
-

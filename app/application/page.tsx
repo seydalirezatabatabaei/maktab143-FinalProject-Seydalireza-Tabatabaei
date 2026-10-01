@@ -8,16 +8,20 @@ import { getCategories, getProducts } from "@/Api/ProductsApi";
 import { Category, Product } from "@/app/types/types";
 import { Button } from "@/components/ui/button";
 import ProductCard from "@/components/product-card";
+import StorefrontInventoryReadout from "@/components/storefront-inventory-readout";
 import { AccordionLoader } from "@/components/accordion-loader";
 import {
   ArrowRight,
+  Cable,
   Check,
   ChevronRight,
   Cpu,
   Gamepad2,
+  HardDrive,
   Headphones,
   Heart,
   Laptop,
+  Keyboard,
   LayoutGrid,
   Menu,
   Monitor,
@@ -151,12 +155,14 @@ export default function HomePage() {
                     priority
                     unoptimized
                     sizes="(max-width: 768px) 90vw, 440px"
-                    className="object-cover"
+                    className="object-cover grayscale contrast-125"
                   />
                 </div>
               </div>
             </div>
           </section>
+
+          <StorefrontInventoryReadout products={featuredProducts} />
 
 {/* Categories */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
@@ -168,7 +174,7 @@ export default function HomePage() {
               href={`/application/products?category=${category.id}`}
               className="group flex flex-col items-center gap-3 rounded-xl border bg-card p-4 text-center transition-all hover:shadow-md hover:border-primary"
             >
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted text-2xl">
                 {getCategoryIcon(category.icon)}
               </div>
               <span className="text-sm font-medium">{category.name}</span>
@@ -253,13 +259,12 @@ function getCategoryIcon(icon: string): ReactNode {
   const icons: Record<string, ReactNode> = {
     laptop: <Laptop />,
     mobile: <Smartphone />,
-    tablet:<Tablet/>,
+    tablet: <Tablet />,
     headphones: <Headphones />,
-    monitor: "🖥️",
-    keyboard: "⌨️",
-    accessories: "🔌",
-    storage: "💾",
+    monitor: <Monitor />,
+    keyboard: <Keyboard />,
+    accessories: <Cable />,
+    storage: <HardDrive />,
   };
-  return icons[icon] || "📦";
+  return icons[icon] || <Package />;
 }
-

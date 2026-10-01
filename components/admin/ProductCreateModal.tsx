@@ -1,12 +1,8 @@
 "use client";
 
-import {
-  type ChangeEvent,
-  type FormEvent,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { type ChangeEvent, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import type { ProductCreateFormInput } from "@/Api/ProductsApi";
 import { Category, SubCategory } from "@/app/types/types";
@@ -21,18 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-type ProductCreateForm = {
-  name: string;
-  brand: string;
-  price: string;
-  quantity: string;
-  category: number | "";
-  subcategory: number | "";
-  description: string;
-  image: File | null;
-  previewUrl: string;
-};
+import { productCreateSchema, type ProductCreateFormValues } from "@/lib/form-schemas";
 
 interface ProductCreateModalProps {
   categories: Category[];
@@ -51,105 +36,30 @@ export default function ProductCreateModal({
   onClose,
   onCreate,
 }: ProductCreateModalProps) {
-  const formRef = useRef<HTMLFormElement>(null);
-  const [imageError, setImageError] = useState<string | null>(null);
-  const [form, setForm] = useState<ProductCreateForm>({
-    name: "",
-    brand: "",
-    price: "",
-    quantity: "",
-    category: "",
-    subcategory: "",
-    description: "",
-    image: null,
-    previewUrl: "",
-  });
+  const [previewUrl, setPreviewUrl] = useState("");
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<ProductCreateFormValues>({ resolver: zodResolver(productCreateSchema), defaultValues: { name: "", brand: "", price: "", quantity: "", category: "", subcategory: "", description: "" } });
+  const image = watch("image");
+  const category = watch("category");
 
   useEffect(() => {
-    return () => {
-      if (form.previewUrl) {
-        URL.revokeObjectURL(form.previewUrl);
-      }
-    };
-  }, [form.previewUrl]);
+    if (!image) { setPreviewUrl(""); return; }
+    const url = URL.createObjectURL(image);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [image]);
 
   const availableSubcategories = subcategories.filter(
-    (subcategory) => subcategory.category === form.category
+    (subcategory) => subcategory.category === Number(category)
   );
-
-  const updateForm = (field: keyof ProductCreateForm, value: string) => {
-    setForm((current) => {
-      if (field === "category") {
-        return {
-          ...current,
-          category: value ? Number(value) : "",
-          subcategory: "",
-        };
-      }
-
-      return {
-        ...current,
-        [field]: value,
-      };
-    });
-  };
 
   const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-
-    if (!file) return;
-
-    if (file.type !== "image/jpeg") {
-      setImageError("فقط تصویر با فرمت JPG مجاز است");
-      event.target.value = "";
-      return;
-    }
-
-    if (file.size > 2 * 1024 * 1024) {
-      setImageError("اندازه تصویر باید کمتر از ۲ مگابایت باشد");
-      event.target.value = "";
-      return;
-    }
-
-    setForm((current) => ({
-      ...current,
-      image: file,
-      previewUrl: URL.createObjectURL(file),
-    }));
-    setImageError(null);
+    if (file) setValue("image", file, { shouldValidate: true, shouldDirty: true });
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (isPending || !form.image || !formRef.current?.reportValidity()) return;
-
-    const price = Number(form.price);
-    const quantity = Number(form.quantity);
-
-    if (
-      !form.name.trim() ||
-      !form.brand.trim() ||
-      !Number.isFinite(price) ||
-      price < 0 ||
-      !Number.isFinite(quantity) ||
-      quantity < 0 ||
-      !form.category ||
-      !form.subcategory
-    ) {
-      return;
-    }
-
-    void onCreate({
-      name: form.name.trim(),
-      brand: form.brand.trim(),
-      image: form.image,
-      price,
-      quantity,
-      category: form.category,
-      subcategory: form.subcategory,
-      description: form.description,
-    });
+  const submitProduct = (form: ProductCreateFormValues) => {
+    if (isPending) return;
+    void onCreate({ ...form, price: Number(form.price), quantity: Number(form.quantity), category: Number(form.category), subcategory: Number(form.subcategory) });
   };
 
   return (
@@ -171,8 +81,7 @@ export default function ProductCreateModal({
         </DialogHeader>
 
         <form
-          ref={formRef}
-          onSubmit={handleSubmit}
+          onSubmit={handleSubmit(submitProduct)}
           className="flex flex-col gap-4"
         >
           <div className="grid gap-4 sm:grid-cols-2">
@@ -180,11 +89,7 @@ export default function ProductCreateModal({
               <Label htmlFor="create-product-name">نام کالا</Label>
               <Input
                 id="create-product-name"
-                value={form.name}
-                onChange={(event) =>
-                  updateForm("name", event.target.value)
-                }
-                required
+                {...register("name")}
               />
             </div>
 
@@ -192,11 +97,7 @@ export default function ProductCreateModal({
               <Label htmlFor="create-product-brand">برند</Label>
               <Input
                 id="create-product-brand"
-                value={form.brand}
-                onChange={(event) =>
-                  updateForm("brand", event.target.value)
-                }
-                required
+                {...register("brand")}
               />
             </div>
 
@@ -207,11 +108,7 @@ export default function ProductCreateModal({
                 type="number"
                 min="0"
                 step="1"
-                value={form.price}
-                onChange={(event) =>
-                  updateForm("price", event.target.value)
-                }
-                required
+                {...register("price")}
               />
             </div>
 
@@ -222,11 +119,7 @@ export default function ProductCreateModal({
                 type="number"
                 min="0"
                 step="1"
-                value={form.quantity}
-                onChange={(event) =>
-                  updateForm("quantity", event.target.value)
-                }
-                required
+                {...register("quantity")}
               />
             </div>
 
@@ -234,11 +127,8 @@ export default function ProductCreateModal({
               <Label htmlFor="create-product-category">دسته‌بندی</Label>
               <select
                 id="create-product-category"
-                value={form.category}
-                onChange={(event) =>
-                  updateForm("category", event.target.value)
-                }
-                required
+                value={category}
+                onChange={(event) => { setValue("category", event.target.value, { shouldValidate: true }); setValue("subcategory", "", { shouldValidate: true }); }}
                 className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm"
               >
                 <option value="">انتخاب دسته‌بندی</option>
@@ -254,12 +144,8 @@ export default function ProductCreateModal({
               <Label htmlFor="create-product-subcategory">زیردسته</Label>
               <select
                 id="create-product-subcategory"
-                value={form.subcategory}
-                onChange={(event) =>
-                  updateForm("subcategory", event.target.value)
-                }
-                required
-                disabled={!form.category}
+                {...register("subcategory")}
+                disabled={!category}
                 className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
               >
                 <option value="">انتخاب زیردسته</option>
@@ -277,19 +163,16 @@ export default function ProductCreateModal({
             <textarea
               id="create-product-description"
               rows={4}
-              value={form.description}
-              onChange={(event) =>
-                updateForm("description", event.target.value)
-              }
+              {...register("description")}
               className="w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm"
             />
           </div>
 
           <div className="grid gap-3 sm:grid-cols-[auto_1fr] sm:items-center">
             <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-lg border border-dashed border-input bg-muted">
-              {form.previewUrl ? (
+              {previewUrl ? (
                 <img
-                  src={form.previewUrl}
+                  src={previewUrl}
                   alt="پیش‌نمایش تصویر کالا"
                   className="h-full w-full object-cover"
                 />
@@ -307,16 +190,11 @@ export default function ProductCreateModal({
                 type="file"
                 accept="image/jpeg"
                 onChange={handleImageChange}
-                required
               />
               <span className="text-xs text-muted-foreground">
                 تصویر به‌صورت محلی ذخیره می‌شود. فرمت JPG و حجم کمتر از ۲ مگابایت
               </span>
-              {imageError && (
-                <p role="alert" className="text-sm text-destructive">
-                  {imageError}
-                </p>
-              )}
+              {errors.image && <p role="alert" className="text-sm text-destructive">{errors.image.message}</p>}
             </div>
           </div>
 
@@ -325,6 +203,9 @@ export default function ProductCreateModal({
               {errorMessage}
             </p>
           )}
+          {Object.values(errors).map((fieldError, index) => fieldError?.message && (
+            <p key={index} role="alert" className="text-sm text-destructive">{fieldError.message}</p>
+          ))}
 
           <DialogFooter className="sm:justify-end">
             <Button

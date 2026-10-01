@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Package } from "lucide-react";
 
 import {
   Table,
@@ -36,7 +37,6 @@ interface PriceStockTableProps {
     quantity: number
   ) => void;
 }
-
 export default function PriceStockTable({
   products,
   page,
@@ -84,9 +84,7 @@ export default function PriceStockTable({
               <TableRow>
                 <TableCell colSpan={3} className="h-64 text-center">
                   <div className="flex flex-col items-center justify-center">
-                    <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 text-2xl">
-                      📦
-                    </div>
+                    <div className="mb-4 flex h-16 w-16 items-center justify-center border border-border text-primary"><Package size={24} aria-hidden="true" /></div>
 
                     <h3 className="mb-1 font-bold text-gray-800">
                       کالایی پیدا نشد
@@ -113,9 +111,7 @@ export default function PriceStockTable({
                     {/* Product */}
                     <TableCell className="px-6 py-5">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-lg">
-                          📦
-                        </div>
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-primary text-primary"><Package size={18} aria-hidden="true" /></div>
 
                         <div className="flex min-w-0 flex-col gap-1">
                           <span className="truncate text-sm font-semibold text-gray-900">
@@ -172,19 +168,10 @@ export default function PriceStockTable({
                         </div>
 
                         <div className="shrink-0">
-                          {isOutOfStock ? (
-                            <span className="inline-flex items-center rounded-lg bg-red-50 px-2.5 py-1.5 text-[11px] font-semibold text-red-600">
-                              ناموجود
-                            </span>
-                          ) : isLowStock ? (
-                            <span className="inline-flex items-center rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11px] font-semibold text-amber-600">
-                              کم
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center rounded-lg bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-600">
-                              موجود
-                            </span>
-                          )}
+                          <div className="inventory-readout min-w-[160px] flex-col gap-1">
+                            <span>موجودی / وضعیت</span>
+                            <span className="inventory-readout__value">{quantity.toLocaleString("fa-IR")} · {isOutOfStock ? "ناموجود" : isLowStock ? "کم" : "موجود"}</span>
+                          </div>
                         </div>
                       </div>
                     </TableCell>

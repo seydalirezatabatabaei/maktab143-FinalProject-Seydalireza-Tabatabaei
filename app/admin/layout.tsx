@@ -1,42 +1,20 @@
 import Navbar from "@/components/shadcn-space/blocks/navbar-01/navbar";
-import { NavigationSection } from "../types/types";
-
-// -----------------------------
-//   this data just for admin page
-// -----------------------------
+import type { NavigationSection } from "../types/types";
 
 const navigationData: NavigationSection[] = [
-  {
-    title: "کالاها",
-    href: "/admin",
-  },
-  {
-    title: "موجودی و قیمت ها",
-    href: "/admin/priceandstock",
-  },
-  {
-    title: "سفارشات",
-    href: "/admin/Orders",
-  },
-  {
-    title: "دیدگاه‌ها",
-    href: "/admin/comments",
-  },
+  { title: "کالاها", href: "/admin" },
+  { title: "موجودی و قیمت‌ها", href: "/admin/priceandstock" },
+  { title: "سفارشات", href: "/admin/Orders" },
+  { title: "دیدگاه‌ها", href: "/admin/comments" },
 ];
 
 export default function AdminLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div
-      className="min-h-screen bg-gray-200 font-sans"
-      lang="fa"
-      dir="rtl"
-    >
+    <div lang="fa" dir="rtl" className="min-h-screen bg-background">
       <Navbar navigationData={navigationData} />
-      {children}
+      <div className="admin-content">{children}</div>
     </div>
   );
 }

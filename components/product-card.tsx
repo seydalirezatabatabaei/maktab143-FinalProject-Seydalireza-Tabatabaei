@@ -37,6 +37,12 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
         <p className="mt-2 text-sm font-bold text-primary">
           {product.price.toLocaleString("fa-IR")} تومان
         </p>
+        <div className="inventory-readout mt-3" aria-label={`تعداد موجودی ${product.quantity}`}>
+          <span>موجودی انبار</span>
+          <span className="inventory-readout__value">
+            {product.quantity > 0 ? `${product.quantity.toLocaleString("fa-IR")} عدد` : "ناموجود"}
+          </span>
+        </div>
         <Button className="mt-3 w-full" size="sm" disabled={product.quantity < 1}
           onClick={(event) => { event.stopPropagation(); addItem(product); }}>
           {product.quantity < 1 ? "ناموجود" : "افزودن به سبد"}

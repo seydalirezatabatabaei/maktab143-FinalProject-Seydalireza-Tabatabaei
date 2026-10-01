@@ -1,7 +1,9 @@
 
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import type { ProductUpdateInput } from "@/Api/ProductsApi";
 import {
@@ -22,16 +24,7 @@ import {
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-type ProductForm = {
-  name: string;
-  brand: string;
-  price: string;
-  quantity: string;
-  category: number | "";
-  subcategory: number | "";
-  description: string;
-};
+import { productFormSchema, type ProductFormValues } from "@/lib/form-schemas";
 
 interface ProductEditModalProps {
   product: Product | null;
@@ -45,24 +38,6 @@ interface ProductEditModalProps {
   ) => Promise<unknown> | unknown;
 }
 
-const createInitialForm = (
-  product: Product | null
-): ProductForm | null => {
-  if (!product) {
-    return null;
-  }
-
-  return {
-    name: product.name ?? "",
-    brand: product.brand ?? "",
-    price: String(product.price ?? ""),
-    quantity: String(product.quantity ?? ""),
-    category: product.category ?? "",
-    subcategory: product.subcategory ?? "",
-    description: product.description ?? "",
-  };
-};
-
 export default function ProductEditModal({
   product,
   categories,
@@ -72,110 +47,22 @@ export default function ProductEditModal({
   onClose,
   onUpdate,
 }: ProductEditModalProps) {
-  const formRef = useRef<HTMLFormElement>(null);
-
-  const [form, setForm] = useState<ProductForm | null>(
-    createInitialForm(product)
-  );
+  const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<ProductFormValues>({ resolver: zodResolver(productFormSchema), defaultValues: { name: "", brand: "", price: "", quantity: "", category: "", subcategory: "", description: "" } });
+  const category = watch("category");
 
 // change the the form state whenever the product prop changes
   useEffect(() => {
-    setForm(createInitialForm(product));
+    reset(product ? { name: product.name ?? "", brand: product.brand ?? "", price: String(product.price ?? ""), quantity: String(product.quantity ?? ""), category: product.category ? String(product.category) : "", subcategory: product.subcategory ? String(product.subcategory) : "", description: product.description ?? "" } : undefined);
   }, [product]);
 
   const availableSubcategories = subcategories.filter(
     (subcategory) =>
-      subcategory.category === form?.category
+      subcategory.category === Number(category)
   );
 
-  const updateForm = (
-    field: keyof ProductForm,
-    value: string
-  ) => {
-    setForm((current) => {
-      if (!current) {
-        return current;
-      }
-
-      if (field === "category") {
-        const category = value
-          ? Number(value)
-          : "";
-
-        return {
-          ...current,
-          category,
-          subcategory: "",
-        };
-      }
-
-      if (field === "subcategory") {
-        return {
-          ...current,
-          subcategory: value
-            ? Number(value)
-            : "",
-        };
-      }
-
-      return {
-        ...current,
-        [field]: value,
-      };
-    });
-  };
-
-  const handleSubmit = (
-    event: React.FormEvent<HTMLFormElement>
-  ) => {
-    event.preventDefault();
-
-    if (
-      !form ||
-      !product ||
-      !formRef.current?.reportValidity()
-    ) {
-      return;
-    }
-
-    const price = Number(form.price);
-    const quantity = Number(form.quantity);
-
-    const category =
-      typeof form.category === "number"
-        ? form.category
-        : null;
-
-    const subcategory =
-      typeof form.subcategory === "number"
-        ? form.subcategory
-        : null;
-
-    if (
-      !form.name.trim() ||
-      !form.brand.trim() ||
-      !Number.isFinite(price) ||
-      price < 0 ||
-      !Number.isFinite(quantity) ||
-      quantity < 0 ||
-      category === null ||
-      subcategory === null
-    ) {
-      return;
-    }
-
-    const values: ProductUpdateInput = {
-      id: product.id,
-      name: form.name.trim(),
-      brand: form.brand.trim(),
-      price,
-      quantity,
-      category,
-      subcategory,
-      description: form.description.trim(),
-    };
-
-    void onUpdate(values);
+  const submitProduct = (form: ProductFormValues) => {
+    if (!product || isPending) return;
+    void onUpdate({ id: product.id, name: form.name.trim(), brand: form.brand.trim(), price: Number(form.price), quantity: Number(form.quantity), category: Number(form.category), subcategory: Number(form.subcategory), description: form.description.trim() });
   };
 
   return (
@@ -200,8 +87,7 @@ export default function ProductEditModal({
         </DialogHeader>
 
         <form
-          ref={formRef}
-          onSubmit={handleSubmit}
+          onSubmit={handleSubmit(submitProduct)}
           className="flex flex-col gap-4"
         >
           <div className="grid gap-4 sm:grid-cols-2">
@@ -213,14 +99,7 @@ export default function ProductEditModal({
 
               <Input
                 id="edit-product-name"
-                value={form?.name ?? ""}
-                onChange={(event) =>
-                  updateForm(
-                    "name",
-                    event.target.value
-                  )
-                }
-                required
+                {...register("name")}
               />
             </div>
 
@@ -232,14 +111,7 @@ export default function ProductEditModal({
 
               <Input
                 id="edit-product-brand"
-                value={form?.brand ?? ""}
-                onChange={(event) =>
-                  updateForm(
-                    "brand",
-                    event.target.value
-                  )
-                }
-                required
+                {...register("brand")}
               />
             </div>
 
@@ -254,14 +126,7 @@ export default function ProductEditModal({
                 type="number"
                 min="0"
                 step="1"
-                value={form?.price ?? ""}
-                onChange={(event) =>
-                  updateForm(
-                    "price",
-                    event.target.value
-                  )
-                }
-                required
+                {...register("price")}
               />
             </div>
 
@@ -276,14 +141,7 @@ export default function ProductEditModal({
                 type="number"
                 min="0"
                 step="1"
-                value={form?.quantity ?? ""}
-                onChange={(event) =>
-                  updateForm(
-                    "quantity",
-                    event.target.value
-                  )
-                }
-                required
+                {...register("quantity")}
               />
             </div>
 
@@ -295,14 +153,7 @@ export default function ProductEditModal({
 
               <select
                 id="edit-product-category"
-                value={form?.category ?? ""}
-                onChange={(event) =>
-                  updateForm(
-                    "category",
-                    event.target.value
-                  )
-                }
-                required
+                value={category} onChange={(event) => { setValue("category", event.target.value, { shouldValidate: true }); setValue("subcategory", "", { shouldValidate: true }); }}
                 className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm"
               >
                 <option value="">
@@ -328,15 +179,8 @@ export default function ProductEditModal({
 
               <select
                 id="edit-product-subcategory"
-                value={form?.subcategory ?? ""}
-                onChange={(event) =>
-                  updateForm(
-                    "subcategory",
-                    event.target.value
-                  )
-                }
-                required
-                disabled={!form?.category}
+                {...register("subcategory")}
+                disabled={!category}
                 className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
               >
                 <option value="">
@@ -366,13 +210,7 @@ export default function ProductEditModal({
             <textarea
               id="edit-product-description"
               rows={4}
-              value={form?.description ?? ""}
-              onChange={(event) =>
-                updateForm(
-                  "description",
-                  event.target.value
-                )
-              }
+              {...register("description")}
               className="w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm"
             />
           </div>
@@ -386,6 +224,9 @@ export default function ProductEditModal({
               {errorMessage}
             </p>
           )}
+          {Object.values(errors).map((fieldError, index) => fieldError?.message && (
+            <p key={index} role="alert" className="text-sm text-destructive">{fieldError.message}</p>
+          ))}
 
           {/* دکمه‌ها */}
           <DialogFooter className="sm:justify-end">

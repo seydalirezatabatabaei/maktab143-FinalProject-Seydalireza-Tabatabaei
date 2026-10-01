@@ -143,11 +143,16 @@ export default function PriceAndStockPage() {
     try {
 
       await Promise.all(
-        editedProducts.map((product) =>
+          editedProducts.map((product) =>
           updateMutation.mutateAsync({
             id: product.id,
+            name: product.name,
+            brand: product.brand,
             price: product.price,
             quantity: product.quantity,
+            category: product.category,
+            subcategory: product.subcategory,
+            description: product.description,
           })
         )
       );
