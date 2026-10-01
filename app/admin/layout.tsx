@@ -1,4 +1,4 @@
-import Navbar from "@/components/shadcn-space/blocks/navbar-01/navbar";
+import AdminShell from "@/components/admin/AdminShell";
 import type { NavigationSection } from "../types/types";
 
 const navigationData: NavigationSection[] = [
@@ -11,10 +11,5 @@ const navigationData: NavigationSection[] = [
 export default function AdminLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <div lang="fa" dir="rtl" className="min-h-screen bg-background">
-      <Navbar navigationData={navigationData} />
-      <div className="admin-content">{children}</div>
-    </div>
-  );
+  return <AdminShell navigationData={navigationData}>{children}</AdminShell>;
 }

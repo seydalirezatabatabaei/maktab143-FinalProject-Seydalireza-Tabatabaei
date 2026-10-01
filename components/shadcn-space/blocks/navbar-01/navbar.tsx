@@ -9,7 +9,7 @@ import {
   NavigationMenu, NavigationMenuList,
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
-import { Search, TextAlignJustify } from "lucide-react";
+import { LogOut, Search, TextAlignJustify } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -17,9 +17,10 @@ import CartDialog from "@/components/cart-dialog";
 
 interface NavbarProps {
   navigationData: NavigationSection[];
+  showAdminLogout?: boolean;
 }
 
-const Navbar = ({ navigationData }: NavbarProps) => {
+const Navbar = ({ navigationData, showAdminLogout = false }: NavbarProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleResize = useCallback(() => {
@@ -34,6 +35,16 @@ const Navbar = ({ navigationData }: NavbarProps) => {
   }, [handleResize]);
 
   const pathname = usePathname();
+
+  const handleAdminLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } finally {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      window.location.replace("/admin/register");
+    }
+  };
 
   return (
     <header className="glass-surface sticky top-0 z-40 w-full border-x-0 border-t-0">
@@ -86,6 +97,13 @@ const Navbar = ({ navigationData }: NavbarProps) => {
           </label>
 
           <CartDialog />
+
+          {showAdminLogout && (
+            <Button type="button" variant="outline" size="sm" onClick={handleAdminLogout} className="shrink-0 gap-2">
+              <LogOut size={16} aria-hidden="true" />
+              خروج
+            </Button>
+          )}
 
          
 

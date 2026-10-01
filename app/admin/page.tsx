@@ -96,11 +96,14 @@ export default function PanelAdmin() {
   const updateMutation = useMutation({
     mutationFn: updateProduct,
 
-    onSuccess: () => {
+    onSuccess: (_updatedProduct, variables) => {
       setEditingProduct(null);
 
       queryClient.invalidateQueries({
         queryKey: ["products"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["product", variables.id],
       });
     },
   });
@@ -112,8 +115,12 @@ export default function PanelAdmin() {
   const createMutation = useMutation({
     mutationFn: createProductWithImage,
 
-    onSuccess: () => {
+    onSuccess: (_createdProduct, variables) => {
       setIsAddModalOpen(false);
+
+      if (selectedCategory === undefined || selectedCategory === variables.category) {
+        setPage(Math.floor((productsData?.total ?? 0) / limit) + 1);
+      }
 
       queryClient.invalidateQueries({
         queryKey: ["products"],
@@ -128,12 +135,14 @@ export default function PanelAdmin() {
   const deleteMutation = useMutation({
     mutationFn: deleteProduct,
 
+    onSuccess: () => {
+      const lastPage = Math.max(1, Math.ceil(((productsData?.total ?? 1) - 1) / limit));
+      setPage((currentPage) => Math.min(currentPage, lastPage));
+      void queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+
     onSettled: () => {
       setDeletingProductId(null);
-
-      queryClient.invalidateQueries({
-        queryKey: ["products"],
-      });
     },
   });
 
@@ -183,7 +192,7 @@ export default function PanelAdmin() {
     return (
       <div
         dir="rtl"
-        className="min-h-screen bg-[#fff8f0] flex items-center justify-center"
+        className="min-h-screen bg-white flex items-center justify-center"
       >
         <div className="flex flex-col items-center gap-4">
           <div className="w-16 h-16 rounded-2xl bg-white border border-gray-100 shadow-sm flex items-center justify-center">
@@ -206,7 +215,7 @@ export default function PanelAdmin() {
     return (
       <div
         dir="rtl"
-        className="min-h-screen bg-[#fff8f0] flex items-center justify-center p-6"
+        className="min-h-screen bg-white flex items-center justify-center p-6"
       >
         <div className="w-full max-w-md rounded-3xl bg-white border border-red-100 shadow-sm p-8 text-center">
           <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-red-50 flex items-center justify-center text-2xl">
@@ -228,7 +237,7 @@ export default function PanelAdmin() {
   return (
     <div
       dir="rtl"
-      className="min-h-screen bg-[#fff8f0]"
+      className="min-h-screen bg-white"
     >
       {/* ================================================= */}
       {/* Header */}

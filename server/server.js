@@ -1,17 +1,30 @@
 const jsonServer = require("json-server");
 const cors = require("cors");
 const server = jsonServer.create();
-const router = jsonServer.router("db.json");
-const middlewares = jsonServer.defaults({ noCors: true });
 const fs = require("fs");
 const path = require("path");
 const multer = require("multer");
-const upload = multer({ dest: "uploads/" });
+const uploadDirectory = path.join(__dirname, "uploads");
+const databasePath = path.join(__dirname, "db.json");
+const legacyImagesDirectory = path.join(__dirname, "..", "public", "ImageProduct");
+fs.mkdirSync(uploadDirectory, { recursive: true });
+const upload = multer({
+  dest: uploadDirectory,
+  limits: { fileSize: 2 * 1024 * 1024 },
+  fileFilter: (req, file, callback) => {
+    if (file.mimetype !== "image/jpeg") {
+      return callback(new Error("تصویر باید با فرمت JPG باشد."));
+    }
+    callback(null, true);
+  },
+});
+const router = jsonServer.router(databasePath);
+const middlewares = jsonServer.defaults({ noCors: true });
 const jwt = require("jsonwebtoken");
 const AUTH_JWT_SECRET = "TOP-SECRET";
 const AUTH_JWT_REFRESH_TOKEN_SECRET = "REFRESH_TOKEN_TOP-SECRET";
 const AUTH_JWT_OPTIONS = { expiresIn: 60 * 60 };
-const refreshTokenExpire = "1d";
+const refreshTokenExpire = "7d";
 const accessTokenExpire = "1h";
 
 // TODO: vaghti token nis, 200 mide
@@ -22,8 +35,32 @@ const accessTokenExpire = "1h";
 
 // Load DB file for Authentication middleware and endpoints
 const DB = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "./db.json"), "utf-8")
+  fs.readFileSync(databasePath, "utf-8")
 );
+
+// Move the bundled catalog images into API-managed storage for existing seed products.
+const catalogImageNames = new Set(["phone.jpg"]);
+for (const product of DB.products || []) {
+  const values = [
+    ...(Array.isArray(product.image) ? product.image : [product.image]),
+    product.thumbnail,
+  ];
+  for (const value of values) {
+    if (typeof value !== "string" || value.startsWith("http") || value.startsWith("/files/")) continue;
+    const imageValue = value.startsWith("/ImageProduct/")
+      ? value
+      : /\.jpg$/i.test(value) ? value : `${value}.jpg`;
+    const basename = path.basename(imageValue);
+    if (/^[a-z0-9_-]+\.jpg$/i.test(basename)) catalogImageNames.add(basename);
+  }
+}
+for (const filename of catalogImageNames) {
+  const source = path.join(legacyImagesDirectory, filename);
+  const destination = path.join(uploadDirectory, filename);
+  if (fs.existsSync(source) && !fs.existsSync(destination)) {
+    fs.copyFileSync(source, destination);
+  }
+}
 
 server.use(cors());
 
@@ -67,9 +104,11 @@ server.use(middlewares);
 
 // general upload API (for test)
 server.post("/upload", upload.single("image"), function (req, res, next) {
-  // req.file is the `image` file
-  // req.body will hold the text fields, if there were any
-  res.json(req.file);
+  if (!req.file) return res.status(400).json({ message: "تصویر کالا را انتخاب کنید." });
+  res.status(201).json({
+    filename: req.file.filename,
+    path: `/files/${encodeURIComponent(req.file.filename)}`,
+  });
 });
 
 // list all files API (for test)
@@ -83,8 +122,13 @@ server.get("/files", (req, res, next) => {
 // download (preview) a file API
 server.get("/files/:file_id", (req, res, next) => {
   const { file_id } = req.params;
+  const filename = path.basename(file_id);
+  const imagePath = path.join(uploadDirectory, filename);
+  if (!fs.existsSync(imagePath) || !fs.statSync(imagePath).isFile()) {
+    return res.status(404).json({ message: "تصویر پیدا نشد." });
+  }
   res.set("Content-Type", "image/jpeg");
-  res.sendFile(path.join(__dirname, "uploads/" + file_id));
+  res.sendFile(imagePath);
 });
 
 // To handle POST, PUT and PATCH you need to use a body-parser
@@ -139,7 +183,6 @@ server.use((req, res, next) => {
   next();
 });
 
-let refreshTokens = [];
 // Authentication Routes
 server.post("/auth/login", async function (req, res, next) {
   const { username, password } = req.body;
@@ -162,8 +205,11 @@ server.post("/auth/login", async function (req, res, next) {
       expiresIn: refreshTokenExpire,
     }
   );
-  refreshTokens.push(refreshToken);
-  res.json({ accessToken, refreshToken });
+  res.json({
+    accessToken,
+    refreshToken,
+    user: { username: dbUsername, name, role },
+  });
 });
 
 server.post("/auth/refresh-token", async function (req, res, next) {
@@ -180,20 +226,10 @@ server.post("/auth/refresh-token", async function (req, res, next) {
     });
   }
 
-  // If token does not exist, send error message
-  if (!refreshTokens.includes(refreshToken)) {
-    return res.status(403).json({
-      errors: [
-        {
-          msg: "Invalid refresh token",
-        },
-      ],
-    });
-  }
-
   try {
     const user = await jwt.verify(refreshToken, AUTH_JWT_REFRESH_TOKEN_SECRET);
     const { dbUsername, name, role } = user;
+    if (role !== "admin") return res.status(403).json({ message: "Admin access required." });
     const accessToken = await jwt.sign(
       { dbUsername, name, role },
       AUTH_JWT_SECRET,

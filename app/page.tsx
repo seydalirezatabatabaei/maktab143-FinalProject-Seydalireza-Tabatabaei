@@ -74,12 +74,31 @@ export default function HomePage() {
 
 
 {/* modern side bar  */}
+   {mobileMenu && (
+      <button
+        type="button"
+        className="store-sidebar-backdrop"
+        aria-label="بستن فهرست دسته‌بندی‌ها"
+        onClick={() => setMobileMenu(false)}
+      />
+    )}
+    <button
+      type="button"
+      className={`store-sidebar-toggle ${mobileMenu ? "is-open" : ""}`}
+      aria-controls="shop-sidebar"
+      aria-expanded={mobileMenu}
+      aria-label={mobileMenu ? "بستن فهرست دسته‌بندی‌ها" : "باز کردن فهرست دسته‌بندی‌ها"}
+      onClick={() => setMobileMenu((isOpen) => !isOpen)}
+    >
+      {mobileMenu ? <X size={20} /> : <Menu size={20} />}
+    </button>
    <aside
             id="shop-sidebar"
-            aria-label="Product categories"
-            className={`fixed bottom-0 left-0 top-18 z-30 flex w-64 flex-col overflow-y-auto border-r border-slate-100 bg-white p-6 transition-transform ${
+            aria-label="دسته‌بندی محصولات"
+            aria-hidden={!mobileMenu}
+            className={`store-sidebar fixed bottom-0 left-0 top-18 z-30 flex w-64 flex-col overflow-y-auto border-r border-slate-100 bg-white p-6 transition-transform ${
               mobileMenu ? "translate-x-0" : "-translate-x-full"
-            } lg:translate-x-0`}
+            }`}
           >
             <p className="mb-5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
               توی فروشگاه بگرد 
@@ -87,15 +106,11 @@ export default function HomePage() {
     
     <nav className="space-y-2">
               {categories?.map((category: Category) => (
-                <button
-                  type="button"
+                <Link
                   key={category.id}
-                  // aria-pressed={category.name === name}
-                  // onClick={() => {
-                  //   setCategory(name);
-                  //   setMobileMenu(false);
-                  // }}
-                  className={"flex w-full items-center gap-3 rounded-xl px-3 py-3.5 text-sm transition "}
+                  href={`/application/products?category=${category.id}`}
+                  onClick={() => setMobileMenu(false)}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-3.5 text-sm transition"
                 >
                   <span className="flex gap-5">
                   <span>
@@ -103,7 +118,7 @@ export default function HomePage() {
                   </span>
                   {getCategoryIcon(category.icon)}
                   </span>
-                </button>
+                </Link>
               ))}
             </nav>
     

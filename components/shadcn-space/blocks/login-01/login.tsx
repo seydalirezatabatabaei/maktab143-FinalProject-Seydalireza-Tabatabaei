@@ -14,12 +14,10 @@ import {
 } from "@/components/ui/card";
 import {
   Field,
-  FieldDescription,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import Logo from "@/assets/logo/logo";
 
 import { loginSchema, type LoginFormValues } from "@/lib/form-schemas";
@@ -43,7 +41,7 @@ const LoginForm = () => {
       }),
     });
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
       throw new Error(
@@ -51,26 +49,22 @@ const LoginForm = () => {
       );
     }
 
-    console.log("Login successful");
+    localStorage.setItem("accessToken", data.accessToken);
+    localStorage.setItem("refreshToken", data.refreshToken);
 
-    window.location.href = "/admin";
+    const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl");
+    const isAdminPath = callbackUrl === "/admin" || callbackUrl?.startsWith("/admin/");
+    const destination = isAdminPath && callbackUrl && callbackUrl !== "/admin/register" ? callbackUrl : "/admin";
+    window.location.replace(destination);
   } catch (error) {
-    console.error(error);
-
     setError(
-      "نام کاربری یا رمز عبور اشتباه است."
+      error instanceof Error ? error.message : "نام کاربری یا رمز عبور اشتباه است."
     );
   }
 };
 
   return (
-    <section className="bg-[#fff8f0] dark:bg-background min-h-screen flex items-center justify-center relative">
-      <div className="pointer-events-none absolute inset-0 right-0 overflow-hidden md:block hidden">
-        <div className="absolute left-1/1 top-0 h-650 w-650 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#f4d06f]" />
-
-        <div className="absolute left-1/1 top-0 h-175 w-175 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ff8811] dark:bg-background" />
-      </div>
-
+    <section className="bg-white min-h-screen flex items-center justify-center relative">
       <div className="py-10 md:py-20 max-w-lg px-4 sm:px-0 mx-auto w-full">
         <Card className="max-w-lg px-6 py-8 sm:p-12 relative gap-6">
           <CardHeader className="text-center gap-6 p-0">
@@ -135,33 +129,9 @@ const LoginForm = () => {
                   </Field>
                 </div>
 
-                {/* Remember me */}
-                <Field
-                  orientation="horizontal"
-                  className="justify-between"
-                >
-                  <div className="flex items-center gap-3">
-                    <Checkbox
-                      id="terms"
-                      defaultChecked
-                      className="cursor-pointer"
-                    />
-
-                    <FieldLabel
-                      htmlFor="terms"
-                      className="text-sm text-primary font-normal cursor-pointer"
-                    >
-                      منو یادت بمونه
-                    </FieldLabel>
-                  </div>
-
-                  <a
-                    href="#"
-                    className="text-sm text-card-foreground font-medium text-end"
-                  >
-                    رمزو فراموش کردم
-                  </a>
-                </Field>
+                <p className="text-center text-sm text-muted-foreground">
+                  پس از ورود، نشست ادمین تا ۷ روز فعال می‌ماند.
+                </p>
 
                 {/* Error */}
                 {error && (
@@ -183,14 +153,6 @@ const LoginForm = () => {
                       : "بگذار داخل شوم"}
                   </Button>
 
-                  <FieldDescription className="text-center text-sm font-normal text-muted-foreground">
-                    <a
-                      href="#"
-                      className="font-medium text-card-foreground no-underline!"
-                    >
-                      یه اکانت جدید بساز واسم
-                    </a>
-                  </FieldDescription>
                 </Field>
               </FieldGroup>
             </form>

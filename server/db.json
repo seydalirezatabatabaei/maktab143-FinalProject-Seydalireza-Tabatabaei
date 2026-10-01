@@ -4,10 +4,9 @@
       "name": "Aspire 5 A515یییییییییی",
       "brand": "Acer",
       "image": [
-        "lab2",
-        "lab3"
+        "http://localhost:3002/files/2465a1efd995c0f6635fec4b7078aca3"
       ],
-      "thumbnail": "lab2",
+      "thumbnail": "http://localhost:3002/files/2465a1efd995c0f6635fec4b7078aca3",
       "price": 7,
       "quantity": 18,
       "createdAt": 1768122000000,

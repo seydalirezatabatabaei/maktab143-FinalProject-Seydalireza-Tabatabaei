@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Check, Laptop, Smartphone } from "lucide-react";
+import { getProductImageSrc } from "@/Api/ProductsApi";
 
 export default function StorefrontHero() {
   return (
@@ -31,7 +32,7 @@ export default function StorefrontHero() {
         <div className="storefront-hero__shape storefront-hero__shape--front" />
         <figure className="storefront-hero__laptop">
           <Image
-            src="/ImageProduct/lab4.jpg"
+            src={getProductImageSrc("lab4")}
             alt="لپ‌تاپ روی میز چوبی"
             fill
             priority
@@ -40,7 +41,7 @@ export default function StorefrontHero() {
         </figure>
         <figure className="storefront-hero__phone">
           <Image
-            src="/ImageProduct/phone.jpg"
+            src={getProductImageSrc("phone")}
             alt="گوشی هوشمند در دست"
             fill
             priority

@@ -9,7 +9,7 @@ import {
 } from "@/app/types/types";
 
 export const API_BASE_URL =
-  api.defaults.baseURL || process.env.NEXT_PUBLIC_API_BASE_URL;
+  (api.defaults.baseURL || process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/+$/, "");
 
 type ProductResponseRow = Omit<Product, "image"> & {
   image: string | string[];
@@ -35,6 +35,7 @@ export type ProductUpdateInput = {
   category: number;
   subcategory: number;
   description: string;
+  image?: File;
 };
 
 export const getProductImageSrc = (
@@ -43,11 +44,16 @@ export const getProductImageSrc = (
   const value = Array.isArray(image) ? image[0] : image;
 
   if (!value) {
-    return "/ImageProduct/phone.jpg";
+    return `${API_BASE_URL}/files/phone.jpg`;
   }
 
   if (value.startsWith("/files/")) {
     return `${API_BASE_URL}${value}`;
+  }
+
+  if (value.startsWith("/ImageProduct/")) {
+    const filename = value.split("/").pop() || "phone.jpg";
+    return `${API_BASE_URL}/files/${encodeURIComponent(filename)}`;
   }
 
   if (
@@ -58,7 +64,8 @@ export const getProductImageSrc = (
     return value;
   }
 
-  return `/ImageProduct/${value}.jpg`;
+  const filename = /\.[a-z0-9]+$/i.test(value) ? value : `${value}.jpg`;
+  return `${API_BASE_URL}/files/${encodeURIComponent(filename)}`;
 };
 
 export const getProducts = async ({
@@ -93,6 +100,7 @@ export const getProducts = async ({
 
   return {
     data: response.data.map(normalizeProduct),
+    total: totalCount,
     pages: Math.ceil(totalCount / limit),
   };
 };
@@ -120,7 +128,9 @@ export const updateProduct = async ({
   category,
   subcategory,
   description,
+  image,
 }: ProductUpdateInput): Promise<Product> => {
+  const imageUrl = image ? await uploadProductImage(image) : undefined;
   const response = await api.patch<Product>(
     `/products/${id}`,
     {
@@ -131,6 +141,7 @@ export const updateProduct = async ({
       category,
       subcategory,
       description,
+      ...(imageUrl ? { image: [imageUrl], thumbnail: imageUrl } : {}),
     }
   );
 
@@ -163,7 +174,7 @@ export const uploadProductImage = async (
 
   formData.append("image", image);
 
-  const response = await api.post<{ filename: string }>(
+  const response = await api.post<{ filename: string; path?: string }>(
     "/upload",
     formData
   );
@@ -174,9 +185,9 @@ export const uploadProductImage = async (
     throw new Error("تصویر کالا ذخیره نشد");
   }
 
-  return `${API_BASE_URL}/files/${encodeURIComponent(
-    filename
-  )}`;
+  return response.data.path
+    ? `${API_BASE_URL}${response.data.path}`
+    : `${API_BASE_URL}/files/${encodeURIComponent(filename)}`;
 };
 
 export const createProduct = async (

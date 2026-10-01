@@ -1,11 +1,12 @@
 
 "use client";
 
-import { useEffect } from "react";
+import { type ChangeEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import type { ProductUpdateInput } from "@/Api/ProductsApi";
+import { getProductImageSrc } from "@/Api/ProductsApi";
 import {
   Category,
   Product,
@@ -24,7 +25,7 @@ import {
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { productFormSchema, type ProductFormValues } from "@/lib/form-schemas";
+import { productEditSchema, type ProductEditFormValues } from "@/lib/form-schemas";
 
 interface ProductEditModalProps {
   product: Product | null;
@@ -47,22 +48,38 @@ export default function ProductEditModal({
   onClose,
   onUpdate,
 }: ProductEditModalProps) {
-  const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<ProductFormValues>({ resolver: zodResolver(productFormSchema), defaultValues: { name: "", brand: "", price: "", quantity: "", category: "", subcategory: "", description: "" } });
+  const [previewUrl, setPreviewUrl] = useState("");
+  const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<ProductEditFormValues>({ resolver: zodResolver(productEditSchema), defaultValues: { name: "", brand: "", price: "", quantity: "", category: "", subcategory: "", description: "" } });
   const category = watch("category");
+  const image = watch("image");
 
 // change the the form state whenever the product prop changes
   useEffect(() => {
-    reset(product ? { name: product.name ?? "", brand: product.brand ?? "", price: String(product.price ?? ""), quantity: String(product.quantity ?? ""), category: product.category ? String(product.category) : "", subcategory: product.subcategory ? String(product.subcategory) : "", description: product.description ?? "" } : undefined);
-  }, [product]);
+    reset(product ? { name: product.name ?? "", brand: product.brand ?? "", price: String(product.price ?? ""), quantity: String(product.quantity ?? ""), category: product.category ? String(product.category) : "", subcategory: product.subcategory ? String(product.subcategory) : "", description: product.description ?? "", image: undefined } : undefined);
+  }, [product, reset]);
+
+  useEffect(() => {
+    if (image) {
+      const objectUrl = URL.createObjectURL(image);
+      setPreviewUrl(objectUrl);
+      return () => URL.revokeObjectURL(objectUrl);
+    }
+    setPreviewUrl(product ? getProductImageSrc(product.image) : "");
+  }, [image, product]);
 
   const availableSubcategories = subcategories.filter(
     (subcategory) =>
       subcategory.category === Number(category)
   );
 
-  const submitProduct = (form: ProductFormValues) => {
+  const submitProduct = (form: ProductEditFormValues) => {
     if (!product || isPending) return;
-    void onUpdate({ id: product.id, name: form.name.trim(), brand: form.brand.trim(), price: Number(form.price), quantity: Number(form.quantity), category: Number(form.category), subcategory: Number(form.subcategory), description: form.description.trim() });
+    void onUpdate({ id: product.id, name: form.name.trim(), brand: form.brand.trim(), price: Number(form.price), quantity: Number(form.quantity), category: Number(form.category), subcategory: Number(form.subcategory), description: form.description.trim(), ...(form.image ? { image: form.image } : {}) });
+  };
+
+  const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) setValue("image", file, { shouldValidate: true, shouldDirty: true });
   };
 
   return (
@@ -91,6 +108,13 @@ export default function ProductEditModal({
           className="flex flex-col gap-4"
         >
           <div className="grid gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-2 sm:col-span-2">
+              <Label htmlFor="edit-product-image">تصویر کالا</Label>
+              {previewUrl && <img src={previewUrl} alt={product?.name ?? "پیش‌نمایش تصویر کالا"} className="h-36 w-36 rounded-xl border object-cover" />}
+              <Input id="edit-product-image" type="file" accept="image/jpeg" onChange={handleImageChange} disabled={isPending} />
+              <p className="text-xs text-muted-foreground">برای جایگزینی تصویر، فایل JPG تا ۲ مگابایت انتخاب کنید.</p>
+              {errors.image && <p role="alert" className="text-sm text-destructive">{errors.image.message}</p>}
+            </div>
             {/* نام */}
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="edit-product-name">

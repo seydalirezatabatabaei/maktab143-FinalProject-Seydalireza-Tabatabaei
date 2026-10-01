@@ -18,26 +18,7 @@ import { Button } from "@/components/ui/button";
 import { PaginationFunc } from "@/components/ui/PaginationCom";
 
 import { Product } from "@/app/types/types";
-
-const getProductImageSrc = (product: Product) => {
-  const image = Array.isArray(product.image)
-    ? product.image[0]
-    : product.image;
-
-  if (!image) {
-    return "/ImageProduct/phone.jpg";
-  }
-
-  if (
-    image.startsWith("http://") ||
-    image.startsWith("https://") ||
-    image.startsWith("/")
-  ) {
-    return image;
-  }
-
-  return `/ImageProduct/${image}.jpg`;
-};
+import { getProductImageSrc } from "@/Api/ProductsApi";
 
 interface ProductTableProps {
   products: Product[];
@@ -211,7 +192,7 @@ export default function ProductTable({
                         >
 
                           <img
-                            src={getProductImageSrc(product)}
+                            src={getProductImageSrc(product.image)}
                             alt={product.name}
                             width={56}
                             height={56}

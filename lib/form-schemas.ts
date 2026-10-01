@@ -51,9 +51,11 @@ const productImageSchema = z.custom<File>(
   .refine((file) => file.size <= 2 * 1024 * 1024, "حجم تصویر باید کمتر از ۲ مگابایت باشد.");
 
 export const productCreateSchema = productFormSchema.extend({ image: productImageSchema });
+export const productEditSchema = productFormSchema.extend({ image: productImageSchema.optional() });
 
 export type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 export type ProductCommentFormValues = z.infer<typeof productCommentSchema>;
 export type LoginFormValues = z.infer<typeof loginSchema>;
 export type ProductFormValues = z.infer<typeof productFormSchema>;
 export type ProductCreateFormValues = z.infer<typeof productCreateSchema>;
+export type ProductEditFormValues = z.infer<typeof productEditSchema>;
