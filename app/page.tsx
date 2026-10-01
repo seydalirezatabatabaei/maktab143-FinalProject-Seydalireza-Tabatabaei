@@ -8,12 +8,12 @@ import { getCategories, getProducts } from "@/Api/ProductsApi";
 import { Category, Product } from "@/app/types/types";
 import { Button } from "@/components/ui/button";
 import ProductCard from "@/components/product-card";
+import CategoryProductsSlider from "@/components/category-products-slider";
 import StorefrontInventoryReadout from "@/components/storefront-inventory-readout";
+import StorefrontHero from "@/components/storefront-hero";
 import { AccordionLoader } from "@/components/accordion-loader";
 import {
-  ArrowRight,
   Cable,
-  Check,
   ChevronRight,
   Cpu,
   Gamepad2,
@@ -35,8 +35,7 @@ import {
   Tablet,
   Truck,
   X,
-  Zap,
-} from "lucide-react";import Image from "next/image";
+} from "lucide-react";
 
 const FEATURED_LIMIT = 16;
 
@@ -111,58 +110,8 @@ export default function HomePage() {
    
           </aside>
 
- {/* Hero */}
-  <section className="relative isolate overflow-hidden rounded-[2rem] border border-white/70 bg-[#9dd9d2]/55 p-7 shadow-[0_24px_70px_rgba(57,47,90,0.10)] backdrop-blur-xl sm:p-10 xl:p-14">
-            <div className="grid items-center gap-8 md:grid-cols-2">
-              <div className="relative z-10">
-                <span className="inline-flex items-center gap-2 rounded-full bg-[#fff8f0]/85 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-[#392f5a]">
-                  <Zap size={13} />
-                   هر روز خودت را بهتر کن 
-                </span>
-
-<h1 className="mt-6 text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl xl:text-6xl">
-                  فناوری بهتر
-                  <br />
-                  <span className="text-[#ff8811]">روز بهتر</span>
-                </h1>
-                
-
-<p className="mt-5 max-w-sm text-sm leading-7 text-slate-600">
-                  مجموعه‌ای از نیازهای زیبا و خوش‌طراحی را کشف کنید که کار، بازی و هر چیز دیگری در این میان را دلپذیرتر می‌کنند.
-                </p>
-
-<Link
-                  href="/application/products"
-                 
-                  className="mt-7 inline-flex items-center gap-5 rounded-xl bg-[#392f5a] px-6 py-4 text-sm font-semibold text-[#fff8f0] shadow-lg shadow-[#392f5a]/15 transition hover:-translate-y-1 hover:bg-[#ff8811]"
-                >
-                  نیاز هاتو بخر <ArrowRight size={17} />
-                </Link>
-
-<div className="mt-7 flex items-center gap-2 text-xs text-slate-500">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white">
-                    <Check size={12} className="text-[#392f5a]" />
-                  </span>
-                  ساخته شده برای روش زندگی شما
-                </div>
-              </div>
-
-<div className="relative mx-auto w-full max-w-md">
-                <div className="absolute inset-4 rounded-full bg-white/40 blur-2xl" />
-                <div className="relative aspect-square overflow-hidden rounded-full border-[12px] border-[#fff8f0]/65 bg-[#f4d06f] shadow-2xl shadow-[#392f5a]/15">
-                  <Image
-                    src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1000&q=85"
-                    alt="Over-ear headphones on a yellow background"
-                    fill
-                    priority
-                    unoptimized
-                    sizes="(max-width: 768px) 90vw, 440px"
-                    className="object-cover grayscale contrast-125"
-                  />
-                </div>
-              </div>
-            </div>
-          </section>
+{/* Hero */}
+          <StorefrontHero />
 
           <StorefrontInventoryReadout products={featuredProducts} />
 
@@ -220,7 +169,7 @@ export default function HomePage() {
 </section>
 
 {/* Featured Products */}
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+      {/* <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold">محصولات ویژه</h2>
           <Link href="/application/products">
@@ -238,7 +187,12 @@ export default function HomePage() {
             />
           ))}
         </div>
-      </section>
+      </section> */}
+
+      {/* Products from every category, limited by the API to the first ten. */}
+      {categories?.map((category) => (
+        <CategoryProductsSlider key={category.id} category={category} />
+      ))}
 
       {/* Banner */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
