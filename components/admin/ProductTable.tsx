@@ -2,6 +2,7 @@
 "use client";
 
 import React from "react";
+import { Package } from "lucide-react";
 
 import {
   Table,
@@ -17,26 +18,7 @@ import { Button } from "@/components/ui/button";
 import { PaginationFunc } from "@/components/ui/PaginationCom";
 
 import { Product } from "@/app/types/types";
-
-const getProductImageSrc = (product: Product) => {
-  const image = Array.isArray(product.image)
-    ? product.image[0]
-    : product.image;
-
-  if (!image) {
-    return "/ImageProduct/phone.jpg";
-  }
-
-  if (
-    image.startsWith("http://") ||
-    image.startsWith("https://") ||
-    image.startsWith("/")
-  ) {
-    return image;
-  }
-
-  return `/ImageProduct/${image}.jpg`;
-};
+import { getProductImageSrc } from "@/Api/ProductsApi";
 
 interface ProductTableProps {
   products: Product[];
@@ -55,7 +37,6 @@ interface ProductTableProps {
   onEdit?: (product: Product) => void;
   onDelete?: (product: Product) => void;
 }
-
 export default function ProductTable({
   products,
   categoryMap,
@@ -141,8 +122,8 @@ export default function ProductTable({
                 >
                   <div className="flex flex-col items-center justify-center">
 
-                    <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center text-2xl mb-4">
-                      📦
+                    <div className="mb-4 flex h-16 w-16 items-center justify-center border border-border text-primary">
+                      <Package size={24} aria-hidden="true" />
                     </div>
 
                     <h3 className="font-bold text-gray-800 mb-1">
@@ -211,7 +192,7 @@ export default function ProductTable({
                         >
 
                           <img
-                            src={getProductImageSrc(product)}
+                            src={getProductImageSrc(product.image)}
                             alt={product.name}
                             width={56}
                             height={56}
@@ -264,6 +245,12 @@ export default function ProductTable({
                         <span className="text-xs text-gray-400">
                           شناسه کالا: #{product.id}
                         </span>
+                        <div className="inventory-readout mt-1 max-w-56">
+                          <span>موجودی</span>
+                          <span className="inventory-readout__value">
+                            {product.quantity.toLocaleString("fa-IR")} عدد / {product.quantity < 1 ? "ناموجود" : product.quantity < 5 ? "محدود" : "موجود"}
+                          </span>
+                        </div>
 
                       </div>
 
@@ -448,4 +435,3 @@ export default function ProductTable({
     </div>
   );
 }
-

@@ -1,26 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifySession } from "@/lib/auth";
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const sessionToken = request.cookies.get("admin_session")?.value;
+  const session = sessionToken ? await verifySession(sessionToken) : null;
 
-  // صفحه ورود آزاد است
   if (pathname === "/admin/register") {
-    return NextResponse.next();
+    return session
+      ? NextResponse.redirect(new URL("/admin", request.url))
+      : NextResponse.next();
   }
 
-  // فقط مسیرهای admin محافظت شوند
   if (pathname.startsWith("/admin")) {
-    const session = request.cookies.get("admin_session")?.value;
-
     if (!session) {
       const loginUrl = new URL("/admin/register", request.url);
-
-      loginUrl.searchParams.set(
-        "callbackUrl",
-        pathname
-      );
-
-      return NextResponse.redirect(loginUrl);
+      const callbackPath = `${pathname}${request.nextUrl.search}`;
+      loginUrl.searchParams.set("callbackUrl", callbackPath);
+      const response = NextResponse.redirect(loginUrl);
+      response.cookies.delete("admin_session");
+      response.cookies.delete("access_token");
+      response.cookies.delete("refresh_token");
+      return response;
     }
   }
 

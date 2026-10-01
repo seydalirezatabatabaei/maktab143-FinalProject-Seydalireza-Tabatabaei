@@ -30,6 +30,9 @@ export default function PriceAndStockPage() {
   const [page, setPage] = useState(1);
 
   const [editedProducts, setEditedProducts] = useState<Product[]>([]);
+  const [dirtyProductIds, setDirtyProductIds] = useState<Set<number>>(new Set());
+  const [saveMessage, setSaveMessage] = useState("");
+  const [saveError, setSaveError] = useState("");
 
   const limit = 10;
 
@@ -64,6 +67,7 @@ export default function PriceAndStockPage() {
 
     if (data?.data) {
       setEditedProducts(data.data);
+      setDirtyProductIds(new Set());
     }
 
   }, [data]);
@@ -75,19 +79,6 @@ export default function PriceAndStockPage() {
   const updateMutation = useMutation({
     mutationFn: updateProduct,
 
-    onSuccess: () => {
-
-      queryClient.invalidateQueries({
-        queryKey: [
-          "products-price-stock",
-        ],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ["products"],
-      });
-
-    },
   });
 
   // -----------------------------
@@ -109,6 +100,9 @@ export default function PriceAndStockPage() {
           : product
       )
     );
+    setDirtyProductIds((prev) => new Set(prev).add(id));
+    setSaveMessage("");
+    setSaveError("");
 
   };
 
@@ -131,6 +125,9 @@ export default function PriceAndStockPage() {
           : product
       )
     );
+    setDirtyProductIds((prev) => new Set(prev).add(id));
+    setSaveMessage("");
+    setSaveError("");
 
   };
 
@@ -139,29 +136,31 @@ export default function PriceAndStockPage() {
   // -----------------------------
 
   const handleSave = async () => {
+    const changedProducts = editedProducts.filter((product) => dirtyProductIds.has(product.id));
+    if (!changedProducts.length) return;
 
     try {
-
       await Promise.all(
-        editedProducts.map((product) =>
+          changedProducts.map((product) =>
           updateMutation.mutateAsync({
             id: product.id,
+            name: product.name,
+            brand: product.brand,
             price: product.price,
             quantity: product.quantity,
+            category: product.category,
+            subcategory: product.subcategory,
+            description: product.description,
           })
         )
       );
-
-      console.log(
-        "تمام تغییرات ذخیره شد"
-      );
+      setDirtyProductIds(new Set());
+      setSaveMessage("تغییرات ذخیره شد.");
+      await queryClient.invalidateQueries({ queryKey: ["products-price-stock"] });
+      await queryClient.invalidateQueries({ queryKey: ["products"] });
 
     } catch (error) {
-
-      console.error(
-        "خطا در ذخیره:",
-        error
-      );
+      setSaveError(error instanceof Error ? error.message : "ذخیره‌ی تغییرات ناموفق بود.");
 
     }
 
@@ -209,7 +208,7 @@ export default function PriceAndStockPage() {
 
         <Button
           onClick={handleSave}
-          disabled={updateMutation.isPending}
+          disabled={updateMutation.isPending || dirtyProductIds.size === 0}
           className="bg-green-600 text-white hover:bg-green-700"
         >
           {updateMutation.isPending
@@ -219,7 +218,12 @@ export default function PriceAndStockPage() {
 
       </div>
 
-      <main className="max-w-5xl mx-auto p-6 ">
+      <main className="max-w-5xl mx-auto p-6">
+        {(saveMessage || saveError) && (
+          <p role={saveError ? "alert" : "status"} className={`mb-4 rounded-xl px-4 py-3 text-sm ${saveError ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-800"}`}>
+            {saveError || saveMessage}
+          </p>
+        )}
 
         {isFetching && (
           <div className="text-sm text-blue-500 mb-3">
@@ -234,6 +238,7 @@ export default function PriceAndStockPage() {
           onPageChange={setPage}
           onPriceChange={handlePriceChange}
           onQuantityChange={handleQuantityChange}
+          disabled={updateMutation.isPending}
         />
 
       </main>

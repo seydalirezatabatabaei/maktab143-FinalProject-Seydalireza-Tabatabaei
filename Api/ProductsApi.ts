@@ -1,17 +1,23 @@
+
 import api from "./axios";
 import {
   Category,
   SubCategory,
   Product,
+  ProductComment,
+  ProductCommentStatus,
 } from "@/app/types/types";
 
-export const API_BASE_URL = api.defaults.baseURL || "http://localhost:3002";
+export const API_BASE_URL =
+  (api.defaults.baseURL || process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/+$/, "");
 
 type ProductResponseRow = Omit<Product, "image"> & {
   image: string | string[];
 };
 
-const normalizeProduct = (product: ProductResponseRow): Product => ({
+const normalizeProduct = (
+  product: ProductResponseRow
+): Product => ({
   ...product,
   image: Array.isArray(product.image)
     ? product.image
@@ -20,13 +26,36 @@ const normalizeProduct = (product: ProductResponseRow): Product => ({
       : [],
 });
 
-export const getProductImageSrc = (image: string | string[] | undefined) => {
+export type ProductUpdateInput = {
+  id: number;
+  name: string;
+  brand: string;
+  price: number;
+  quantity: number;
+  category: number;
+  subcategory: number;
+  description: string;
+  image?: File;
+};
+
+export const getProductImageSrc = (
+  image: string | string[] | undefined
+) => {
   const value = Array.isArray(image) ? image[0] : image;
 
-  if (!value) return "/ImageProduct/phone.jpg";
+  if (!value) {
+    return `${API_BASE_URL}/files/phone.jpg`;
+  }
+
   if (value.startsWith("/files/")) {
     return `${API_BASE_URL}${value}`;
   }
+
+  if (value.startsWith("/ImageProduct/")) {
+    const filename = value.split("/").pop() || "phone.jpg";
+    return `${API_BASE_URL}/files/${encodeURIComponent(filename)}`;
+  }
+
   if (
     value.startsWith("http://") ||
     value.startsWith("https://") ||
@@ -35,7 +64,8 @@ export const getProductImageSrc = (image: string | string[] | undefined) => {
     return value;
   }
 
-  return `/ImageProduct/${value}.jpg`;
+  const filename = /\.[a-z0-9]+$/i.test(value) ? value : `${value}.jpg`;
+  return `${API_BASE_URL}/files/${encodeURIComponent(filename)}`;
 };
 
 export const getProducts = async ({
@@ -51,51 +81,72 @@ export const getProducts = async ({
   subcategory?: number;
   search?: string;
 }) => {
-  const response = await api.get<Product[]>("/products", {
-    params: {
-      _page: page,
-      _limit: limit,
-      ...(category && { category }),
-      ...(subcategory && { subcategory }),
-      ...(search && { name_like: search }),
-    },
-  });
+  const response = await api.get<ProductResponseRow[]>(
+    "/products",
+    {
+      params: {
+        _page: page,
+        _limit: limit,
+        ...(category !== undefined && { category }),
+        ...(subcategory !== undefined && { subcategory }),
+        ...(search && { name_like: search }),
+      },
+    }
+  );
 
-  const totalCount = Number(response.headers["x-total-count"] || 0);
+  const totalCount = Number(
+    response.headers["x-total-count"] || 0
+  );
 
   return {
-    data: response.data,
+    data: response.data.map(normalizeProduct),
+    total: totalCount,
     pages: Math.ceil(totalCount / limit),
   };
 };
 
 export const getCategories = async (): Promise<Category[]> => {
-  const response = await api.get("/category");
+  const response = await api.get<Category[]>("/category");
+
   return response.data;
 };
 
-export const getSubCategories = async (): Promise<SubCategory[]> => {
-  const response = await api.get("/subcategory");
-  return response.data;
-};
+export const getSubCategories =
+  async (): Promise<SubCategory[]> => {
+    const response =
+      await api.get<SubCategory[]>("/subcategory");
+
+    return response.data;
+  };
 
 export const updateProduct = async ({
   id,
+  name,
+  brand,
   price,
   quantity,
-}: {
-  id: number;
-  price: number;
-  quantity: number;
-}): Promise<Product> => {
-  const response = await api.patch(`/products/${id}`, {
-    price,
-    quantity,
-  });
+  category,
+  subcategory,
+  description,
+  image,
+}: ProductUpdateInput): Promise<Product> => {
+  const imageUrl = image ? await uploadProductImage(image) : undefined;
+  const response = await api.patch<Product>(
+    `/products/${id}`,
+    {
+      name,
+      brand,
+      price,
+      quantity,
+      category,
+      subcategory,
+      description,
+      ...(imageUrl ? { image: [imageUrl], thumbnail: imageUrl } : {}),
+    }
+  );
 
   return response.data;
 };
-
 
 export type ProductCreateInput = {
   name: string;
@@ -116,25 +167,37 @@ export type ProductCreateFormInput = Omit<
   image: File;
 };
 
-export const uploadProductImage = async (image: File): Promise<string> => {
+export const uploadProductImage = async (
+  image: File
+): Promise<string> => {
   const formData = new FormData();
+
   formData.append("image", image);
 
-  const response = await api.post<{ filename: string }>("/upload", formData);
+  const response = await api.post<{ filename: string; path?: string }>(
+    "/upload",
+    formData
+  );
+
   const filename = response.data.filename;
 
   if (!filename) {
     throw new Error("تصویر کالا ذخیره نشد");
   }
 
-  const baseUrl = api.defaults.baseURL || "http://localhost:3002";
-  return `${baseUrl}/files/${encodeURIComponent(filename)}`;
+  return response.data.path
+    ? `${API_BASE_URL}${response.data.path}`
+    : `${API_BASE_URL}/files/${encodeURIComponent(filename)}`;
 };
 
 export const createProduct = async (
   product: ProductCreateInput
 ): Promise<Product> => {
-  const response = await api.post<Product>("/products", product);
+  const response = await api.post<Product>(
+    "/products",
+    product
+  );
+
   return response.data;
 };
 
@@ -150,6 +213,49 @@ export const createProductWithImage = async (
   });
 };
 
-export const deleteProduct = async (id: number): Promise<void> => {
+export const deleteProduct = async (
+  id: number
+): Promise<void> => {
   await api.delete(`/products/${id}`);
 };
+
+export const getProductComments = async (
+  productId: number
+): Promise<ProductComment[]> => {
+  const response = await api.get<ProductComment[]>("/comments", {
+    params: { productId },
+  });
+  return response.data;
+};
+
+export const getAdminComments = async (
+  status?: ProductCommentStatus
+): Promise<ProductComment[]> => {
+  const response = await api.get<ProductComment[]>("/comments", {
+    params: status ? { status } : {},
+  });
+  return response.data;
+};
+
+export const createProductComment = async (comment: {
+  productId: number;
+  name: string;
+  body: string;
+  rating: number;
+}): Promise<ProductComment> => {
+  const response = await api.post<ProductComment>("/comments", comment);
+  return response.data;
+};
+
+export const updateProductCommentStatus = async (
+  id: number,
+  status: ProductCommentStatus
+): Promise<ProductComment> => {
+  const response = await api.patch<ProductComment>(`/comments/${id}`, { status });
+  return response.data;
+};
+
+export const deleteProductComment = async (id: number): Promise<void> => {
+  await api.delete(`/comments/${id}`);
+};
+

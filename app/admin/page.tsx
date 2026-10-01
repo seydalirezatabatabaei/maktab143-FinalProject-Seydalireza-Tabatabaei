@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { LayoutGrid, ListTree, Package } from "lucide-react";
 import {
   useMutation,
   useQuery,
@@ -95,11 +96,14 @@ export default function PanelAdmin() {
   const updateMutation = useMutation({
     mutationFn: updateProduct,
 
-    onSuccess: () => {
+    onSuccess: (_updatedProduct, variables) => {
       setEditingProduct(null);
 
       queryClient.invalidateQueries({
         queryKey: ["products"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["product", variables.id],
       });
     },
   });
@@ -111,8 +115,12 @@ export default function PanelAdmin() {
   const createMutation = useMutation({
     mutationFn: createProductWithImage,
 
-    onSuccess: () => {
+    onSuccess: (_createdProduct, variables) => {
       setIsAddModalOpen(false);
+
+      if (selectedCategory === undefined || selectedCategory === variables.category) {
+        setPage(Math.floor((productsData?.total ?? 0) / limit) + 1);
+      }
 
       queryClient.invalidateQueries({
         queryKey: ["products"],
@@ -127,12 +135,14 @@ export default function PanelAdmin() {
   const deleteMutation = useMutation({
     mutationFn: deleteProduct,
 
+    onSuccess: () => {
+      const lastPage = Math.max(1, Math.ceil(((productsData?.total ?? 1) - 1) / limit));
+      setPage((currentPage) => Math.min(currentPage, lastPage));
+      void queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+
     onSettled: () => {
       setDeletingProductId(null);
-
-      queryClient.invalidateQueries({
-        queryKey: ["products"],
-      });
     },
   });
 
@@ -182,7 +192,7 @@ export default function PanelAdmin() {
     return (
       <div
         dir="rtl"
-        className="min-h-screen bg-[#f7f9f8] flex items-center justify-center"
+        className="min-h-screen bg-white flex items-center justify-center"
       >
         <div className="flex flex-col items-center gap-4">
           <div className="w-16 h-16 rounded-2xl bg-white border border-gray-100 shadow-sm flex items-center justify-center">
@@ -205,7 +215,7 @@ export default function PanelAdmin() {
     return (
       <div
         dir="rtl"
-        className="min-h-screen bg-[#f7f9f8] flex items-center justify-center p-6"
+        className="min-h-screen bg-white flex items-center justify-center p-6"
       >
         <div className="w-full max-w-md rounded-3xl bg-white border border-red-100 shadow-sm p-8 text-center">
           <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-red-50 flex items-center justify-center text-2xl">
@@ -227,7 +237,7 @@ export default function PanelAdmin() {
   return (
     <div
       dir="rtl"
-      className="min-h-screen bg-[#f7f9f8]"
+      className="min-h-screen bg-white"
     >
       {/* ================================================= */}
       {/* Header */}
@@ -296,9 +306,7 @@ export default function PanelAdmin() {
                 </p>
               </div>
 
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl group-hover:scale-105 transition-transform">
-                📦
-              </div>
+              <div className="flex h-12 w-12 items-center justify-center border border-primary text-primary"><Package size={22} aria-hidden="true" /></div>
 
             </div>
 
@@ -320,8 +328,8 @@ export default function PanelAdmin() {
                 </p>
               </div>
 
-              <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl group-hover:scale-105 transition-transform">
-                ◈
+              <div className="flex h-12 w-12 items-center justify-center border border-primary text-primary">
+                <LayoutGrid size={22} aria-hidden="true" />
               </div>
 
             </div>
@@ -344,14 +352,21 @@ export default function PanelAdmin() {
                 </p>
               </div>
 
-              <div className="w-12 h-12 rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center text-xl group-hover:scale-105 transition-transform">
-                ≡
+              <div className="flex h-12 w-12 items-center justify-center border border-primary text-primary">
+                <ListTree size={22} aria-hidden="true" />
               </div>
 
             </div>
 
           </div>
 
+        </div>
+
+        <div className="inventory-readout mb-6">
+          <span>وضعیت موجودی / صفحه {page}</span>
+          <span className="inventory-readout__value">
+            {products.filter((product) => product.quantity > 0 && product.quantity < 5).length.toLocaleString("fa-IR")} کالا با موجودی محدود
+          </span>
         </div>
 
         {/* ================================================= */}
@@ -591,4 +606,3 @@ export default function PanelAdmin() {
     </div>
   );
 }
-

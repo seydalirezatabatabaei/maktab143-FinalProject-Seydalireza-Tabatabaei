@@ -8,16 +8,20 @@ import { getCategories, getProducts } from "@/Api/ProductsApi";
 import { Category, Product } from "@/app/types/types";
 import { Button } from "@/components/ui/button";
 import ProductCard from "@/components/product-card";
+import CategoryProductsSlider from "@/components/category-products-slider";
+import StorefrontInventoryReadout from "@/components/storefront-inventory-readout";
+import StorefrontHero from "@/components/storefront-hero";
 import { AccordionLoader } from "@/components/accordion-loader";
 import {
-  ArrowRight,
-  Check,
+  Cable,
   ChevronRight,
   Cpu,
   Gamepad2,
+  HardDrive,
   Headphones,
   Heart,
   Laptop,
+  Keyboard,
   LayoutGrid,
   Menu,
   Monitor,
@@ -31,8 +35,7 @@ import {
   Tablet,
   Truck,
   X,
-  Zap,
-} from "lucide-react";import Image from "next/image";
+} from "lucide-react";
 
 const FEATURED_LIMIT = 16;
 
@@ -71,12 +74,31 @@ export default function HomePage() {
 
 
 {/* modern side bar  */}
+   {mobileMenu && (
+      <button
+        type="button"
+        className="store-sidebar-backdrop"
+        aria-label="بستن فهرست دسته‌بندی‌ها"
+        onClick={() => setMobileMenu(false)}
+      />
+    )}
+    <button
+      type="button"
+      className={`store-sidebar-toggle ${mobileMenu ? "is-open" : ""}`}
+      aria-controls="shop-sidebar"
+      aria-expanded={mobileMenu}
+      aria-label={mobileMenu ? "بستن فهرست دسته‌بندی‌ها" : "باز کردن فهرست دسته‌بندی‌ها"}
+      onClick={() => setMobileMenu((isOpen) => !isOpen)}
+    >
+      {mobileMenu ? <X size={20} /> : <Menu size={20} />}
+    </button>
    <aside
             id="shop-sidebar"
-            aria-label="Product categories"
-            className={`fixed bottom-0 left-0 top-18 z-30 flex w-64 flex-col overflow-y-auto border-r border-slate-100 bg-white p-6 transition-transform ${
+            aria-label="دسته‌بندی محصولات"
+            aria-hidden={!mobileMenu}
+            className={`store-sidebar fixed bottom-0 left-0 top-18 z-30 flex w-64 flex-col overflow-y-auto border-r border-slate-100 bg-white p-6 transition-transform ${
               mobileMenu ? "translate-x-0" : "-translate-x-full"
-            } lg:translate-x-0`}
+            }`}
           >
             <p className="mb-5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
               توی فروشگاه بگرد 
@@ -84,15 +106,11 @@ export default function HomePage() {
     
     <nav className="space-y-2">
               {categories?.map((category: Category) => (
-                <button
-                  type="button"
+                <Link
                   key={category.id}
-                  // aria-pressed={category.name === name}
-                  // onClick={() => {
-                  //   setCategory(name);
-                  //   setMobileMenu(false);
-                  // }}
-                  className={"flex w-full items-center gap-3 rounded-xl px-3 py-3.5 text-sm transition "}
+                  href={`/application/products?category=${category.id}`}
+                  onClick={() => setMobileMenu(false)}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-3.5 text-sm transition"
                 >
                   <span className="flex gap-5">
                   <span>
@@ -100,65 +118,17 @@ export default function HomePage() {
                   </span>
                   {getCategoryIcon(category.icon)}
                   </span>
-                </button>
+                </Link>
               ))}
             </nav>
     
    
           </aside>
 
- {/* Hero */}
-  <section className="relative isolate overflow-hidden bg-[#eae9f4] p-7 sm:p-10 xl:p-14">
-            <div className="grid items-center gap-8 md:grid-cols-2">
-              <div className="relative z-10">
-                <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-indigo-600">
-                  <Zap size={13} />
-                   هر روز خودت را بهتر کن 
-                </span>
+{/* Hero */}
+          <StorefrontHero />
 
-<h1 className="mt-6 text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl xl:text-6xl">
-                  فناوری بهتر
-                  <br />
-                  <span className="text-indigo-600">روز بهتر</span>
-                </h1>
-                
-
-<p className="mt-5 max-w-sm text-sm leading-7 text-slate-600">
-                  مجموعه‌ای از نیازهای زیبا و خوش‌طراحی را کشف کنید که کار، بازی و هر چیز دیگری در این میان را دلپذیرتر می‌کنند.
-                </p>
-
-<Link
-                  href="http://localhost:3000/application/products"
-                 
-                  className="mt-7 inline-flex items-center gap-5 rounded-xl bg-slate-900 px-6 py-4 text-sm font-semibold text-white transition hover:bg-indigo-600"
-                >
-                  نیاز هاتو بخر <ArrowRight size={17} />
-                </Link>
-
-<div className="mt-7 flex items-center gap-2 text-xs text-slate-500">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white">
-                    <Check size={12} className="text-indigo-600" />
-                  </span>
-                  ساخته شده برای روش زندگی شما
-                </div>
-              </div>
-
-<div className="relative mx-auto w-full max-w-md">
-                <div className="absolute inset-4 rounded-full bg-white/40 blur-2xl" />
-                <div className="relative aspect-square overflow-hidden rounded-full border-[12px] border-white/40 bg-[#f4d76a] shadow-2xl shadow-indigo-900/10">
-                  <Image
-                    src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1000&q=85"
-                    alt="Over-ear headphones on a yellow background"
-                    fill
-                    priority
-                    unoptimized
-                    sizes="(max-width: 768px) 90vw, 440px"
-                    className="object-cover"
-                  />
-                </div>
-              </div>
-            </div>
-          </section>
+          <StorefrontInventoryReadout products={featuredProducts} />
 
 {/* Categories */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
@@ -170,7 +140,7 @@ export default function HomePage() {
               href={`/application/products?category=${category.id}`}
               className="group flex flex-col items-center gap-3 rounded-xl border bg-card p-4 text-center transition-all hover:shadow-md hover:border-primary"
             >
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted text-2xl">
                 {getCategoryIcon(category.icon)}
               </div>
               <span className="text-sm font-medium">{category.name}</span>
@@ -202,7 +172,7 @@ export default function HomePage() {
     },
   ].map(({ icon: Icon, title, text }) => (
     <div key={title} className="flex items-center gap-3">
-      <div className="rounded-xl bg-slate-50 p-3 text-indigo-600">
+      <div className="rounded-xl bg-[#9dd9d2]/35 p-3 text-[#392f5a]">
         <Icon size={22} />
       </div>
       <div>
@@ -214,7 +184,7 @@ export default function HomePage() {
 </section>
 
 {/* Featured Products */}
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+      {/* <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold">محصولات ویژه</h2>
           <Link href="/application/products">
@@ -232,7 +202,12 @@ export default function HomePage() {
             />
           ))}
         </div>
-      </section>
+      </section> */}
+
+      {/* Products from every category, limited by the API to the first ten. */}
+      {categories?.map((category) => (
+        <CategoryProductsSlider key={category.id} category={category} />
+      ))}
 
       {/* Banner */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
@@ -255,13 +230,12 @@ function getCategoryIcon(icon: string): ReactNode {
   const icons: Record<string, ReactNode> = {
     laptop: <Laptop />,
     mobile: <Smartphone />,
-    tablet:<Tablet/>,
+    tablet: <Tablet />,
     headphones: <Headphones />,
-    monitor: "🖥️",
-    keyboard: "⌨️",
-    accessories: "🔌",
-    storage: "💾",
+    monitor: <Monitor />,
+    keyboard: <Keyboard />,
+    accessories: <Cable />,
+    storage: <HardDrive />,
   };
-  return icons[icon] || "📦";
+  return icons[icon] || <Package />;
 }
-

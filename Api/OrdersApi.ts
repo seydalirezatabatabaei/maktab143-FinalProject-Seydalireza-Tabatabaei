@@ -25,3 +25,34 @@ export const getOrders = async ({
     pages: Math.ceil(totalCount / limit),
   };
 };
+
+export type CreateOrderInput = Omit<Order, "id" | "createdAt" | "paymentStatus">;
+
+export const createOrder = async (order: CreateOrderInput): Promise<Order> => {
+  const response = await api.post<Order>("/orders", {
+    ...order,
+    paymentStatus: "pending",
+  });
+  return response.data;
+};
+
+export const getOrder = async (id: number): Promise<Order> => {
+  const response = await api.get<Order>(`/orders/${id}`);
+  return response.data;
+};
+
+export const updateOrderPaymentStatus = async (
+  id: number,
+  paymentStatus: NonNullable<Order["paymentStatus"]>
+): Promise<Order> => {
+  const response = await api.patch<Order>(`/orders/${id}`, { paymentStatus });
+  return response.data;
+};
+
+export const updateOrderDelivered = async (
+  id: number,
+  delivered: "true" | "false"
+): Promise<Order> => {
+  const response = await api.patch<Order>(`/orders/${id}`, { delivered });
+  return response.data;
+};

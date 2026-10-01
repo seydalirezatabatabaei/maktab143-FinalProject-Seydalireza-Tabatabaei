@@ -9,41 +9,45 @@ import {
   NavigationMenu, NavigationMenuList,
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
-import { Search, TextAlignJustify } from "lucide-react";
+import { LogOut, Search, TextAlignJustify } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import ButtonDemo from "../../button/button-16";
+import CartDialog from "@/components/cart-dialog";
 
 interface NavbarProps {
   navigationData: NavigationSection[];
+  showAdminLogout?: boolean;
 }
 
-const Navbar = ({ navigationData }: NavbarProps) => {
-  const [sticky, setSticky] = useState(false);
+const Navbar = ({ navigationData, showAdminLogout = false }: NavbarProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleScroll = useCallback(() => {
-    setSticky(window.scrollY >= 50);
-  }, []);
-
   const handleResize = useCallback(() => {
-    if (window.innerWidth >= 768) setIsOpen(false);
+    if (window.innerWidth >= 1024) setIsOpen(false);
   }, []);
 
   useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
     window.addEventListener("resize", handleResize);
     return () => {
-      window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
     };
-  }, [handleScroll, handleResize]);
+  }, [handleResize]);
 
   const pathname = usePathname();
 
+  const handleAdminLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } finally {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      window.location.replace("/admin/register");
+    }
+  };
+
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-100 bg-[#caf0f8]">
+    <header className="glass-surface sticky top-0 z-40 w-full border-x-0 border-t-0">
       <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
         <nav
           className={cn(
@@ -57,7 +61,7 @@ const Navbar = ({ navigationData }: NavbarProps) => {
             <Logo />
           </Link>
 
-          <NavigationMenu className="max-lg:hidden bg-muted p-0.5 rounded-full">
+          <NavigationMenu className="max-lg:hidden border border-border bg-muted p-0.5">
             <NavigationMenuList className="flex gap-0">
               {navigationData.map((item) => {
                 const isActive =
@@ -70,10 +74,10 @@ const Navbar = ({ navigationData }: NavbarProps) => {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "px-4 py-2 rounded-md transition-colors",
+                      "px-4 py-2 transition-colors",
                       isActive
-                        ? "bg-green-600 text-white"
-                        : "bg-transparent text-gray-700 hover:bg-gray-100"
+                        ? "border-b border-primary bg-muted text-primary"
+                        : "bg-transparent text-foreground hover:text-primary"
                     )}
                   >
                     {item.title}
@@ -83,8 +87,8 @@ const Navbar = ({ navigationData }: NavbarProps) => {
             </NavigationMenuList>
           </NavigationMenu>
 
-          <label className="hidden max-w-xl flex-1 items-center gap-3 rounded-xl bg-slate-50 px-4 py-3 md:flex">
-            <Search size={18} className="text-slate-400" />
+          <label className="hidden max-w-xl flex-1 items-center gap-3 border border-border bg-card px-4 py-2 md:flex">
+            <Search size={18} className="text-muted-foreground" />
             <input
               aria-label="Search products"
               placeholder=" برای پیدا کردن محصولت تایپ کن ..."
@@ -92,11 +96,20 @@ const Navbar = ({ navigationData }: NavbarProps) => {
             />
           </label>
 
+          <CartDialog />
+
+          {showAdminLogout && (
+            <Button type="button" variant="outline" size="sm" onClick={handleAdminLogout} className="shrink-0 gap-2">
+              <LogOut size={16} aria-hidden="true" />
+              خروج
+            </Button>
+          )}
+
          
 
           <div className="lg:hidden">
             <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-              <DropdownMenuTrigger className="rounded-full bg-background border border-border p-2 outline-none flex items-center justify-center cursor-pointer">
+              <DropdownMenuTrigger className="flex cursor-pointer items-center justify-center border border-border bg-background p-2 outline-none">
                 <TextAlignJustify size={20} />
                 <span className="sr-only">Menu</span>
               </DropdownMenuTrigger>

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -12,29 +14,20 @@ import {
 } from "@/components/ui/card";
 import {
   Field,
-  FieldDescription,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import Logo from "@/assets/logo/logo";
 
-import { login } from "@/Api/AuthApi";
+import { loginSchema, type LoginFormValues } from "@/lib/form-schemas";
 
 const LoginForm = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema), defaultValues: { username: "", password: "" } });
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
- const handleSubmit = async (
-  e: React.FormEvent<HTMLFormElement>
-) => {
-  e.preventDefault();
-
+ const submitLogin = async ({ username, password }: LoginFormValues) => {
   try {
-    setLoading(true);
     setError("");
 
     const response = await fetch("/api/auth/login", {
@@ -48,7 +41,7 @@ const LoginForm = () => {
       }),
     });
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
       throw new Error(
@@ -56,28 +49,22 @@ const LoginForm = () => {
       );
     }
 
-    console.log("Login successful");
+    localStorage.setItem("accessToken", data.accessToken);
+    localStorage.setItem("refreshToken", data.refreshToken);
 
-    window.location.href = "/admin";
+    const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl");
+    const isAdminPath = callbackUrl === "/admin" || callbackUrl?.startsWith("/admin/");
+    const destination = isAdminPath && callbackUrl && callbackUrl !== "/admin/register" ? callbackUrl : "/admin";
+    window.location.replace(destination);
   } catch (error) {
-    console.error(error);
-
     setError(
-      "نام کاربری یا رمز عبور اشتباه است."
+      error instanceof Error ? error.message : "نام کاربری یا رمز عبور اشتباه است."
     );
-  } finally {
-    setLoading(false);
   }
 };
 
   return (
-    <section className="bg-[#fff3b0] dark:bg-background min-h-screen flex items-center justify-center relative">
-      <div className="pointer-events-none absolute inset-0 right-0 overflow-hidden md:block hidden">
-        <div className="absolute left-1/1 top-0 h-650 w-650 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#f3de2c]" />
-
-        <div className="absolute left-1/1 top-0 h-175 w-175 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#f8bb66] dark:bg-background" />
-      </div>
-
+    <section className="bg-white min-h-screen flex items-center justify-center relative">
       <div className="py-10 md:py-20 max-w-lg px-4 sm:px-0 mx-auto w-full">
         <Card className="max-w-lg px-6 py-8 sm:p-12 relative gap-6">
           <CardHeader className="text-center gap-6 p-0">
@@ -99,7 +86,7 @@ const LoginForm = () => {
           </CardHeader>
 
           <CardContent className="p-0">
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit(submitLogin)}>
               <FieldGroup className="gap-6">
                 <div className="flex flex-col gap-4">
 
@@ -116,11 +103,10 @@ const LoginForm = () => {
                       id="username"
                       type="text"
                       placeholder="نام کاربری را وارد کنید"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      required
+                      {...register("username")}
                       className="dark:bg-background h-9 shadow-xs"
                     />
+                    {errors.username && <p role="alert" className="text-xs text-red-500">{errors.username.message}</p>}
                   </Field>
 
                   {/* Password */}
@@ -136,41 +122,16 @@ const LoginForm = () => {
                       id="password"
                       type="password"
                       placeholder="رمز را اینجا وارد کنید"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
+                      {...register("password")}
                       className="dark:bg-background h-9 shadow-xs"
                     />
+                    {errors.password && <p role="alert" className="text-xs text-red-500">{errors.password.message}</p>}
                   </Field>
                 </div>
 
-                {/* Remember me */}
-                <Field
-                  orientation="horizontal"
-                  className="justify-between"
-                >
-                  <div className="flex items-center gap-3">
-                    <Checkbox
-                      id="terms"
-                      defaultChecked
-                      className="cursor-pointer"
-                    />
-
-                    <FieldLabel
-                      htmlFor="terms"
-                      className="text-sm text-primary font-normal cursor-pointer"
-                    >
-                      منو یادت بمونه
-                    </FieldLabel>
-                  </div>
-
-                  <a
-                    href="#"
-                    className="text-sm text-card-foreground font-medium text-end"
-                  >
-                    رمزو فراموش کردم
-                  </a>
-                </Field>
+                <p className="text-center text-sm text-muted-foreground">
+                  پس از ورود، نشست ادمین تا ۷ روز فعال می‌ماند.
+                </p>
 
                 {/* Error */}
                 {error && (
@@ -184,22 +145,14 @@ const LoginForm = () => {
                   <Button
                     type="submit"
                     size="lg"
-                    disabled={loading}
+                    disabled={isSubmitting}
                     className="rounded-lg h-10 hover:bg-primary/80 cursor-pointer"
                   >
-                    {loading
+                    {isSubmitting
                       ? "در حال ورود..."
                       : "بگذار داخل شوم"}
                   </Button>
 
-                  <FieldDescription className="text-center text-sm font-normal text-muted-foreground">
-                    <a
-                      href="#"
-                      className="font-medium text-card-foreground no-underline!"
-                    >
-                      یه اکانت جدید بساز واسم
-                    </a>
-                  </FieldDescription>
                 </Field>
               </FieldGroup>
             </form>

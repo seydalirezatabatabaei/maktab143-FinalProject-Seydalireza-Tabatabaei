@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { createSession } from "@/lib/auth";
+import { createSession, SESSION_DURATION_SECONDS } from "@/lib/auth";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3002";
 
 export async function POST(request: Request) {
   try {
@@ -21,7 +23,7 @@ export async function POST(request: Request) {
 
     // ارسال اطلاعات Login به Backend
     const response = await fetch(
-      "http://localhost:3002/auth/login",
+      `${API_BASE_URL.replace(/\/+$/, "")}/auth/login`,
       {
         method: "POST",
         headers: {
@@ -34,7 +36,7 @@ export async function POST(request: Request) {
       }
     );
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
       return NextResponse.json(
@@ -49,13 +51,20 @@ export async function POST(request: Request) {
       );
     }
 
-    const { accessToken, refreshToken } = data;
+    const { accessToken, refreshToken, user } = data;
+    if (user?.role !== "admin") {
+      return NextResponse.json(
+        { message: "این حساب دسترسی پنل مدیریت را ندارد." },
+        { status: 403 }
+      );
+    }
 
-    // ساخت Session مخصوص Next.js
-    const session = await createSession(username);
+    const session = await createSession(username, user.role);
 
     const result = NextResponse.json({
       success: true,
+      accessToken,
+      refreshToken,
     });
 
     // Session
@@ -63,7 +72,7 @@ export async function POST(request: Request) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7,
+      maxAge: SESSION_DURATION_SECONDS,
       path: "/",
     });
 

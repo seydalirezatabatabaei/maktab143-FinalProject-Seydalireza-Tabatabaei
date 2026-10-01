@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { Minus, Package, Plus } from "lucide-react";
 
 import {
   Table,
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/table";
 
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 import { Product } from "@/app/types/types";
 
@@ -35,8 +37,8 @@ interface PriceStockTableProps {
     id: number,
     quantity: number
   ) => void;
+  disabled?: boolean;
 }
-
 export default function PriceStockTable({
   products,
   page,
@@ -44,7 +46,10 @@ export default function PriceStockTable({
   onPageChange,
   onPriceChange,
   onQuantityChange,
+  disabled = false,
 }: PriceStockTableProps) {
+  const [editingField, setEditingField] = useState<{ id: number; field: "price" | "quantity" } | null>(null);
+
   return (
     <div className="w-full overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
       {/* Header */}
@@ -84,9 +89,7 @@ export default function PriceStockTable({
               <TableRow>
                 <TableCell colSpan={3} className="h-64 text-center">
                   <div className="flex flex-col items-center justify-center">
-                    <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 text-2xl">
-                      📦
-                    </div>
+                    <div className="mb-4 flex h-16 w-16 items-center justify-center border border-border text-primary"><Package size={24} aria-hidden="true" /></div>
 
                     <h3 className="mb-1 font-bold text-gray-800">
                       کالایی پیدا نشد
@@ -101,6 +104,9 @@ export default function PriceStockTable({
             ) : (
               products.map((product) => {
                 const quantity = Number(product.quantity) || 0;
+                const price = Number(product.price) || 0;
+                const editingPrice = editingField?.id === product.id && editingField.field === "price";
+                const editingQuantity = editingField?.id === product.id && editingField.field === "quantity";
 
                 const isOutOfStock = quantity === 0;
                 const isLowStock = quantity > 0 && quantity <= 5;
@@ -113,9 +119,7 @@ export default function PriceStockTable({
                     {/* Product */}
                     <TableCell className="px-6 py-5">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-lg">
-                          📦
-                        </div>
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-primary text-primary"><Package size={18} aria-hidden="true" /></div>
 
                         <div className="flex min-w-0 flex-col gap-1">
                           <span className="truncate text-sm font-semibold text-gray-900">
@@ -131,10 +135,18 @@ export default function PriceStockTable({
 
                     {/* Price */}
                     <TableCell className="px-6 py-5">
-                      <div className="relative">
+                      <div className="flex items-center gap-2">
                         <Input
                           type="number"
                           min={0}
+                          step={1000}
+                          readOnly={!editingPrice}
+                          disabled={disabled}
+                          aria-label={`قیمت ${product.name}`}
+                          title={editingPrice ? "ویرایش قیمت" : "برای ویرایش کلیک کنید"}
+                          onClick={() => setEditingField({ id: product.id, field: "price" })}
+                          onFocus={() => setEditingField({ id: product.id, field: "price" })}
+                          onBlur={() => setEditingField((current) => current?.id === product.id && current.field === "price" ? null : current)}
                           value={product.price ?? ""}
                           onChange={(event) =>
                             onPriceChange(
@@ -142,13 +154,18 @@ export default function PriceStockTable({
                               Number(event.target.value)
                             )
                           }
-                          className="h-11 rounded-xl border-gray-200 bg-gray-50 pl-16 pr-4 text-sm font-semibold text-gray-900 shadow-none transition-all focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-100"
+                          className={`h-11 rounded-xl border-gray-200 pl-16 pr-4 text-sm font-semibold text-gray-900 shadow-none transition-all focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-100 ${editingPrice ? "bg-white" : "cursor-pointer bg-gray-50"}`}
                           placeholder="0"
                         />
-
-                        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-400">
-                          تومان
-                        </span>
+                        <div className="flex shrink-0 gap-1">
+                          <Button type="button" variant="outline" size="icon" aria-label={`افزایش قیمت ${product.name} به اندازه هزار تومان`} disabled={disabled} onClick={() => onPriceChange(product.id, price + 1000)}>
+                            <Plus size={15} aria-hidden="true" />
+                          </Button>
+                          <Button type="button" variant="outline" size="icon" aria-label={`کاهش قیمت ${product.name} به اندازه هزار تومان`} disabled={disabled || price <= 0} onClick={() => onPriceChange(product.id, Math.max(0, price - 1000))}>
+                            <Minus size={15} aria-hidden="true" />
+                          </Button>
+                        </div>
+                        <span className="shrink-0 text-xs font-medium text-gray-400">تومان</span>
                       </div>
                     </TableCell>
 
@@ -159,6 +176,14 @@ export default function PriceStockTable({
                           <Input
                             type="number"
                             min={0}
+                            step={1}
+                            readOnly={!editingQuantity}
+                            disabled={disabled}
+                            aria-label={`موجودی ${product.name}`}
+                            title={editingQuantity ? "ویرایش موجودی" : "برای ویرایش کلیک کنید"}
+                            onClick={() => setEditingField({ id: product.id, field: "quantity" })}
+                            onFocus={() => setEditingField({ id: product.id, field: "quantity" })}
+                            onBlur={() => setEditingField((current) => current?.id === product.id && current.field === "quantity" ? null : current)}
                             value={product.quantity ?? ""}
                             onChange={(event) =>
                               onQuantityChange(
@@ -166,25 +191,25 @@ export default function PriceStockTable({
                                 Number(event.target.value)
                               )
                             }
-                            className="h-11 rounded-xl border-gray-200 bg-gray-50 px-4 text-sm font-semibold text-gray-900 shadow-none transition-all focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-100"
+                            className={`h-11 rounded-xl border-gray-200 px-4 text-sm font-semibold text-gray-900 shadow-none transition-all focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-100 ${editingQuantity ? "bg-white" : "cursor-pointer bg-gray-50"}`}
                             placeholder="0"
                           />
                         </div>
 
+                        <div className="flex shrink-0 gap-1">
+                          <Button type="button" variant="outline" size="icon" aria-label={`افزایش موجودی ${product.name}`} disabled={disabled} onClick={() => onQuantityChange(product.id, quantity + 1)}>
+                            <Plus size={15} aria-hidden="true" />
+                          </Button>
+                          <Button type="button" variant="outline" size="icon" aria-label={`کاهش موجودی ${product.name}`} disabled={disabled || quantity <= 0} onClick={() => onQuantityChange(product.id, Math.max(0, quantity - 1))}>
+                            <Minus size={15} aria-hidden="true" />
+                          </Button>
+                        </div>
+
                         <div className="shrink-0">
-                          {isOutOfStock ? (
-                            <span className="inline-flex items-center rounded-lg bg-red-50 px-2.5 py-1.5 text-[11px] font-semibold text-red-600">
-                              ناموجود
-                            </span>
-                          ) : isLowStock ? (
-                            <span className="inline-flex items-center rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11px] font-semibold text-amber-600">
-                              کم
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center rounded-lg bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-600">
-                              موجود
-                            </span>
-                          )}
+                          <div className="inventory-readout min-w-[160px] flex-col gap-1">
+                            <span>موجودی / وضعیت</span>
+                            <span className="inventory-readout__value">{quantity.toLocaleString("fa-IR")} · {isOutOfStock ? "ناموجود" : isLowStock ? "کم" : "موجود"}</span>
+                          </div>
                         </div>
                       </div>
                     </TableCell>

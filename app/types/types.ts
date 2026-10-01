@@ -57,6 +57,19 @@ export interface Order {
   products: OrderProduct[];
   prices: number;
   delivered: "true" | "false";
+  paymentStatus?: "pending" | "paid" | "failed";
+  createdAt: number;
+}
+
+export type ProductCommentStatus = "pending" | "approved" | "rejected";
+
+export interface ProductComment {
+  id: number;
+  productId: number;
+  name: string;
+  body: string;
+  rating: number;
+  status: ProductCommentStatus;
   createdAt: number;
 }
 
